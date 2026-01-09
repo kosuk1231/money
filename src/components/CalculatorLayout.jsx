@@ -115,7 +115,7 @@ export default function CalculatorLayout() {
                                             <label className="block text-base font-bold text-slate-600 mb-2">자녀 수</label>
                                             <input
                                                 type="number" min="0" placeholder="0"
-                                                className="w-full border-2 border-slate-300 rounded-lg p-2 text-lg font-bold focus:border-blue-500 outline-none"
+                                                className="w-full border-2 border-slate-300 rounded-lg p-2 text-lg font-bold focus:border-blue-500 outline-none no-spinner"
                                                 value={formData.numChildren}
                                                 onChange={(e) => setFormData({ ...formData, numChildren: e.target.value })}
                                             />
@@ -124,7 +124,7 @@ export default function CalculatorLayout() {
                                             <label className="block text-base font-bold text-slate-600 mb-2">기타부양</label>
                                             <input
                                                 type="number" min="0" placeholder="0"
-                                                className="w-full border-2 border-slate-300 rounded-lg p-2 text-lg font-bold focus:border-blue-500 outline-none"
+                                                className="w-full border-2 border-slate-300 rounded-lg p-2 text-lg font-bold focus:border-blue-500 outline-none no-spinner"
                                                 value={formData.numOthers}
                                                 onChange={(e) => setFormData({ ...formData, numOthers: e.target.value })}
                                             />
@@ -136,13 +136,13 @@ export default function CalculatorLayout() {
 
                         {/* 3. Additional Custom Allowances */}
                         <BrickSection title="3. 추가 수당" className="flex-1 flex flex-col">
-                            <div className="flex-1 flex flex-col justify-center space-y-8">
+                            <div className="flex-1 flex flex-col justify-around">
                                 <div>
                                     <label className="block text-base font-bold text-slate-600 mb-2">법인 수당</label>
                                     <div className="relative">
                                         <input
                                             type="number" min="0" placeholder="0"
-                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-8"
+                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-8 no-spinner"
                                             value={formData.corporationAllowance === 0 ? '' : formData.corporationAllowance}
                                             onChange={(e) => setFormData({ ...formData, corporationAllowance: e.target.value })}
                                         />
@@ -154,7 +154,7 @@ export default function CalculatorLayout() {
                                     <div className="relative">
                                         <input
                                             type="number" min="0" placeholder="0"
-                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-8"
+                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-8 no-spinner"
                                             value={formData.districtAllowance === 0 ? '' : formData.districtAllowance}
                                             onChange={(e) => setFormData({ ...formData, districtAllowance: e.target.value })}
                                         />
