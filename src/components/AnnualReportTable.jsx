@@ -91,7 +91,7 @@ export default function AnnualReportTable({ annualReport }) {
                                 </td>
                                 <td className="py-3 px-2 text-slate-500">
                                     {formatMoney(
-                                        row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance
+                                        row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance
                                     )}
                                 </td>
                                 <td className="py-3 px-2 font-bold text-blue-900 bg-blue-50/30 border-l border-r border-blue-50">
@@ -116,7 +116,7 @@ export default function AnnualReportTable({ annualReport }) {
                                 {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.holidayBonus, 0))}
                             </td>
                             <td className="py-4 px-2">
-                                {formatMoney(annualReport.months.reduce((acc, cur) => acc + (cur.mealAllowance + cur.managerAllowance + cur.familyAllowance + cur.corporationAllowance), 0))}
+                                {formatMoney(annualReport.months.reduce((acc, cur) => acc + (cur.mealAllowance + cur.managerAllowance + cur.familyAllowance + cur.corporationAllowance + cur.districtAllowance), 0))}
                             </td>
                             <td className="py-4 px-2 text-blue-900">
                                 {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.monthlyTotal, 0))}

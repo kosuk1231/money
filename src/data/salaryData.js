@@ -106,13 +106,8 @@ export function calculateFamilyAllowance(hasSpouse, numChildren, numOthers) {
 }
 
 // Simple simplified tax estimator (approximate for display)
-export function calculateIncomeTax(taxableMonthly, numPeople, taxRatePercent) {
-  // If user provided a specific tax rate, use it (simplified)
-  if (taxRatePercent !== undefined && taxRatePercent !== null && taxRatePercent !== '') {
-    return Math.floor(taxableMonthly * (parseFloat(taxRatePercent) / 100) / 10) * 10;
-  }
-
-  // Otherwise use the default simplified bracket logic
+export function calculateIncomeTax(taxableMonthly, numPeople) {
+  // Use the default simplified bracket logic
   let tax = 0;
   if (taxableMonthly < 1060000) return 0;
 
@@ -143,44 +138,37 @@ export function calculateSalary(grade, hobong, options = {}) {
   const corpData = options.additionalAllowances?.corporation || { amount: 0, type: 'monthly' };
   let monthlyCorporation = corpData.type === 'yearly' ? Math.floor(corpData.amount / 12) : corpData.amount;
   
-  const distData = options.additionalAllowances?.district || { amount: 0, type: 'monthly' };
-  let annualDistrict = distData.type === 'yearly' ? distData.amount : distData.amount * 12;
-
+  // District Allowance for Monthly Estimate:
+  // User said it is paid in June/Dec only.
+  // So for a "Normal" monthly estimate, it is 0.
+  // However, for the Annual Summary (Yellow Box), we want to return the total annual amount.
+  const distAmount = options.additionalAllowances?.district || 0;
+  const annualDistrict = distAmount * 2;
+  
   // Ordinary Wage Calculation (New Formula)
   // Ordinary Wage = Base + (Annual Holiday Bonus / 12)
-  // * Note: Standard definition might differ, but user requested specific formula: 
-  // "기본급 + (연간 명절휴가비 총액 ÷ 12개월)"
-  // Holiday Bonus = Base * 0.6 * 2 = 1.2 * Base
   const annualHolidayTotal = baseSalary * 1.2;
   const ordinaryWage = baseSalary + Math.floor(annualHolidayTotal / 12);
 
   // Allowances Total (Monthly Normal)
-  // Note: Holiday Bonus is NOT included in the normal monthly total displayed in the "Monthly Estimate" box,
-  // because it only happens in Feb/Sep. The "Monthly Estimate" usually implies a regular month.
   const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation;
 
   // Deductions (Monthly Normal)
   const nonTaxableAmount = mealAllowance; // Meal is non-taxable
   const taxableIncome = Math.max(0, monthlyTotal - nonTaxableAmount);
 
-  const pensionIncome = Math.min(taxableIncome, 6170000); // Max cap for pension (check 2026 cap if changed, stick to existing logic for now)
+  const pensionIncome = Math.min(taxableIncome, 6170000); // 2026 cap check needed, using existing
   const nationalPension = Math.floor(pensionIncome * DEDUCTION_RATES.PENSION / 10) * 10;
   const healthInsurance = Math.floor(taxableIncome * DEDUCTION_RATES.HEALTH / 10) * 10;
   const longTermCare = Math.floor(healthInsurance * DEDUCTION_RATES.CARE / 10) * 10;
   const employmentInsurance = Math.floor(taxableIncome * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
 
   const numFamily = 1 + (options.hasSpouse ? 1 : 0) + options.numChildren + options.numOthers;
-  const incomeTax = calculateIncomeTax(taxableIncome, numFamily, options.taxRatePercent);
+  const incomeTax = calculateIncomeTax(taxableIncome, numFamily);
   const localIncomeTax = Math.floor(incomeTax * 0.1 / 10) * 10;
 
   const totalDeductions = nationalPension + healthInsurance + longTermCare + employmentInsurance + incomeTax + localIncomeTax;
   const netPay = monthlyTotal - totalDeductions;
-
-  // Annual Totals (Approximation for 'Quick View')
-  // This is a rough estimate. For accurate annual total, use generateAnnualReport.
-  // We'll leave the existing annual logic here as a simple multiplier for the 'Monthly View' component if needed,
-  // but arguably we should rely on the accurate report. 
-  // Let's return the `ordinaryWage` as requested.
 
   return {
     baseSalary,
@@ -214,16 +202,16 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
   let annualTotalPostTax = 0;
   let annualHolidayTotal = 0;
 
+  const districtAllowanceAmount = options.additionalAllowances?.district || 0;
+
   for (let m = 1; m <= 12; m++) {
     // 1. Determine Hobong for this month
-    // If promotionMonth is set (e.g., 7), from month 7 onwards, use startHobong + 1
     if (promotionMonth && m >= promotionMonth) {
       currentHobong = startHobong + 1;
     } else {
       currentHobong = startHobong;
     }
     
-    // Max hobong check (assuming 31 is max in table)
     if (currentHobong > 31) currentHobong = 31;
 
     const baseSalary = SALARY_TABLE[startGrade]?.[currentHobong] || 0;
@@ -236,23 +224,22 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     const corpData = options.additionalAllowances?.corporation || { amount: 0, type: 'monthly' };
     let monthlyCorporation = corpData.type === 'yearly' ? Math.floor(corpData.amount / 12) : corpData.amount;
 
+    // District Allowance (June, Dec only)
+    let monthlyDistrict = 0;
+    if (m === 6 || m === 12) {
+      monthlyDistrict = districtAllowanceAmount;
+    }
+
     // 3. Holiday Bonus (Feb, Sep) -> 60% of Base
     let holidayBonus = 0;
     if (m === 2 || m === 9) {
       holidayBonus = Math.floor(baseSalary * 0.6);
     }
 
-    // 4. Welfare Points (Usually not monthly strictly, but for report we might want to just show it in the summary or distribute it? 
-    // The user requirement says "include 2/9 month holiday bonus", but didn't specify welfare point month. 
-    // We will exclude welfare points from the monthly rows for now to keep it clean, OR include if we want to be precise.
-    // The previous logic added welfare points to the ANNUAL total. 
-    // Let's exclude from monthly net pay table unless we pick a month. 
-    // For now, track it separately for annual total.
-    
-    const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + holidayBonus;
+    const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrict + holidayBonus;
 
     // 5. Deductions
-    const nonTaxable = mealAllowance; // Meal only? Double check if corporation is non-taxable. Assuming Meal only for safety.
+    const nonTaxable = mealAllowance; 
     const taxable = Math.max(0, monthlyTotal - nonTaxable);
 
     const pensionIncome = Math.min(taxable, 6170000);
@@ -262,7 +249,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     const employmentInsurance = Math.floor(taxable * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
     
     const numFamily = 1 + (options.hasSpouse ? 1 : 0) + options.numChildren + options.numOthers;
-    const incomeTax = calculateIncomeTax(taxable, numFamily, options.taxRatePercent);
+    const incomeTax = calculateIncomeTax(taxable, numFamily);
     const localIncomeTax = Math.floor(incomeTax * 0.1 / 10) * 10;
     
     const totalDeductions = nationalPension + healthInsurance + longTermCare + employmentInsurance + incomeTax + localIncomeTax;
@@ -276,6 +263,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
       managerAllowance,
       familyAllowance,
       corporationAllowance: monthlyCorporation,
+      districtAllowance: monthlyDistrict, // Passed for display if needed
       holidayBonus,
       monthlyTotal,
       taxable,
@@ -297,23 +285,11 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
   }
 
   // Add Welfare Points to Annual Total (Post-calculation)
-  // Logic: Welfare points (High/Low) based on the *starting* hobong or ending? Usually based on status.
-  // We'll use the STARTING hobong status to decide the allowance tier for simplicity, or we can check average.
-  // Let's use startHobong.
+  // Let's use startHobong for status.
   const welfarePoints = startHobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW;
   
-  // Also District Allowance (Annual)
-  const distData = options.additionalAllowances?.district || { amount: 0, type: 'monthly' };
-  let annualDistrict = distData.type === 'yearly' ? distData.amount : distData.amount * 12;
-
-  // Final Annual Totals
-  const finalAnnualPreTax = annualTotalPreTax + welfarePoints + annualDistrict;
-  // Net Pay might need to deduct tax from welfare points if taxable? 
-  // Usually points are taxable. But for this calculator, we might just add to total. 
-  // Let's assume Net Pay also gets these amounts (minus potential tax, but let's just add raw for now or assume non-taxable? 
-  // Standard is taxable. For simplicity in this "Estimate" app, let's just add to Net Pay or keep separate.
-  // User asked for "Monthy Salary Table". The Annual Summary should include these.
-  const finalAnnualPostTax = annualTotalPostTax + welfarePoints + annualDistrict;
+  const finalAnnualPreTax = annualTotalPreTax + welfarePoints;
+  const finalAnnualPostTax = annualTotalPostTax + welfarePoints; // Assuming welfare points are tax-free or just added blindly as per previous logic
 
   return {
     months,
@@ -322,7 +298,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
       annualPostTax: finalAnnualPostTax,
       annualHoliday: annualHolidayTotal,
       welfarePoints,
-      annualDistrict
+      annualDistrict: districtAllowanceAmount * 2 // Verification helper
     }
   };
 }

@@ -54,9 +54,9 @@ export default function SalaryResult({ result, grade, hobong }) {
                 <div className="bg-red-50 border-4 border-red-800 rounded-xl p-6 shadow-[6px_6px_0px_0px_rgba(153,27,27,0.3)] flex flex-col justify-between h-full">
                     <h2 className="text-xl font-black text-red-900 mb-4">공제 예상액</h2>
                     <div className="flex flex-col justify-around flex-1 space-y-1">
-                        <ResultRow label="국민연금 (4.5%)" value={result.deductions.nationalPension} isSub={true} isDeduction={true} />
-                        <ResultRow label="건강보험 (3.545%)" value={result.deductions.healthInsurance} isSub={true} isDeduction={true} />
-                        <ResultRow label="장기요양 (12.95%)" value={result.deductions.longTermCare} isSub={true} isDeduction={true} />
+                        <ResultRow label="국민연금 (4.75%)" value={result.deductions.nationalPension} isSub={true} isDeduction={true} />
+                        <ResultRow label="건강보험 (3.595%)" value={result.deductions.healthInsurance} isSub={true} isDeduction={true} />
+                        <ResultRow label="장기요양 (13.14%)" value={result.deductions.longTermCare} isSub={true} isDeduction={true} />
                         <ResultRow label="고용보험 (0.9%)" value={result.deductions.employmentInsurance} isSub={true} isDeduction={true} />
                         <ResultRow label="세금 (소득세+지방세)" value={result.deductions.incomeTax + result.deductions.localIncomeTax} isSub={true} isDeduction={true} />
                     </div>

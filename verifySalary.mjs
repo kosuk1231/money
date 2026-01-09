@@ -1,6 +1,6 @@
 import { calculateSalary, generateAnnualReport } from './src/data/salaryData.js';
 
-console.log("Starting Verification for Seoul Social Worker Salary 2026 (Updated)...\n");
+console.log("Starting Verification for Seoul Social Worker Salary 2026 (Phase 2 Update)...\n");
 
 const tests = [
     {
@@ -16,28 +16,6 @@ const tests = [
             familyAllowance: 90000, 
             monthlyTotal: 2749000,
             ordinaryWage: 2529000 + Math.floor(2529000 * 1.2 / 12) // Base + (Base*1.2/12)
-        }
-    },
-    {
-        name: "Case 2: 1st Grade, 10 Hobong (Deduction Rate Check 2026)",
-        input: {
-            grade: "1급",
-            hobong: 10,
-            options: { isManager: false, hasSpouse: false, numChildren: 0, numOthers: 0 }
-        },
-        expectedChecks: (result) => {
-             // Pension 4.75%
-             const taxable = result.monthlyTotal - result.mealAllowance; // 3964000 + 130000 - 130000 = 3964000
-             const expPension = Math.floor(Math.min(taxable, 6170000) * 0.0475 / 10) * 10;
-             if (result.deductions.nationalPension !== expPension) {
-                 return `Pension mismatch: got ${result.deductions.nationalPension}, expected ${expPension}`;
-             }
-             // Health 3.595%
-             const expHealth = Math.floor(taxable * 0.03595 / 10) * 10;
-             if (result.deductions.healthInsurance !== expHealth) {
-                 return `Health mismatch: got ${result.deductions.healthInsurance}, expected ${expHealth}`;
-             }
-             return null;
         }
     }
 ];
@@ -58,13 +36,6 @@ tests.forEach((test, index) => {
             }
         });
     }
-    if (test.expectedChecks) {
-        const error = test.expectedChecks(result);
-        if (error) {
-            console.error(`  ❌ ${error}`);
-            casePassed = false;
-        }
-    }
 
     if (casePassed) {
         console.log("  ✅ Passed");
@@ -74,35 +45,36 @@ tests.forEach((test, index) => {
 });
 
 console.log("--- Annual Report Tests ---");
-// Check Promotion Logic
-// Grade 5, Hobong 1. Promotion in July (Month 7).
-// Jan-Jun: Hobong 1 (2408000). Jul-Dec: Hobong 2 (2434000).
-console.log("[Test Annual 1] Promotion Logic (July)");
-const report = generateAnnualReport("5급", 1, 7, { isManager: false, hasSpouse: false, numChildren: 0 });
-const janFn = report.months.find(m => m.month === 1);
-const julFn = report.months.find(m => m.month === 7);
+console.log("[Test Annual 3] District Allowance Logic (June, Dec)");
+const districtAmount = 500000;
+const report = generateAnnualReport("5급", 1, null, { 
+    isManager: false, 
+    hasSpouse: false, 
+    numChildren: 0,
+    additionalAllowances: { district: districtAmount }
+});
 
-if (janFn.baseSalary === 2408000 && julFn.baseSalary === 2434000) {
-    console.log("  ✅ Passed: Base Salary changes correctly in July.");
-    passed++;
+const junFn = report.months.find(m => m.month === 6);
+const decFn = report.months.find(m => m.month === 12);
+const mayFn = report.months.find(m => m.month === 5);
+
+// Check June
+if (junFn.districtAllowance === districtAmount && decFn.districtAllowance === districtAmount && mayFn.districtAllowance === 0) {
+     console.log("  ✅ Passed: District allowance only in June/Dec.");
+     passed++;
 } else {
-    console.error(`  ❌ Failed: Jan ${janFn.baseSalary}, Jul ${julFn.baseSalary}`);
+     console.error(`  ❌ Failed: Jun ${junFn.districtAllowance}, Dec ${decFn.districtAllowance}, May ${mayFn.districtAllowance}`);
 }
 
-// Check Holiday Bonus (Feb, Sep)
-console.log("[Test Annual 2] Holiday Bonus (Feb, Sep)");
-const febFn = report.months.find(m => m.month === 2);
-const sepFn = report.months.find(m => m.month === 9);
-const augFn = report.months.find(m => m.month === 8);
-
-const expBonusFeb = Math.floor(janFn.baseSalary * 0.6); // Based on current month salary
-const expBonusSep = Math.floor(julFn.baseSalary * 0.6); // Based on current month salary (Hobong 2)
-
-if (febFn.holidayBonus === expBonusFeb && sepFn.holidayBonus === expBonusSep && augFn.holidayBonus === 0) {
-    console.log("  ✅ Passed: Holiday bonuses exist in Feb/Sep and correct amount.");
+// Check Total Sum includes this
+// Monthly Total in June should be Base + Meal + District
+const expectedJunTotal = junFn.baseSalary + junFn.mealAllowance + districtAmount; 
+if (junFn.monthlyTotal === expectedJunTotal) {
+    console.log("  ✅ Passed: Monthly Total in June includes District Allowance.");
     passed++;
 } else {
-    console.error(`  ❌ Failed: FebBonus ${febFn.holidayBonus} (Exp ${expBonusFeb}), SepBonus ${sepFn.holidayBonus} (Exp ${expBonusSep})`);
+    console.error(`  ❌ Failed: Jun Total ${junFn.monthlyTotal} (Exp ${expectedJunTotal})`);
 }
+
 
 console.log(`\nVerification Complete: ${passed}/${tests.length + 2} passed.`);

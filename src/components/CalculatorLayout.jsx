@@ -15,7 +15,7 @@ export default function CalculatorLayout() {
         numOthers: 0,
         corporationAllowance: 0,
         corporationType: 'monthly', // monthly | yearly
-        taxRatePercent: ''
+        districtAllowance: 0, // New: District Welfare June/Dec
     });
 
     const [salaryResult, setSalaryResult] = useState(null);
@@ -33,9 +33,9 @@ export default function CalculatorLayout() {
                 corporation: {
                     amount: parseInt(formData.corporationAllowance || 0),
                     type: formData.corporationType
-                }
-            },
-            taxRatePercent: formData.taxRatePercent
+                },
+                district: parseInt(formData.districtAllowance || 0)
+            }
         });
         setSalaryResult(result);
 
@@ -49,9 +49,9 @@ export default function CalculatorLayout() {
                 corporation: {
                     amount: parseInt(formData.corporationAllowance || 0),
                     type: formData.corporationType
-                }
-            },
-            taxRatePercent: formData.taxRatePercent
+                },
+                district: parseInt(formData.districtAllowance || 0)
+            }
         });
         setAnnualReport(report);
 
@@ -216,21 +216,20 @@ export default function CalculatorLayout() {
                                     </div>
                                 </div>
 
-                                {/* Tax Rate Override */}
+                                {/* District Allowance (New) */}
                                 <div className="pt-2">
-                                    <label className="block text-sm font-bold text-slate-600 mb-1">소득세율 직접 입력 (선택)</label>
-                                    <div className="relative">
-                                        <input
-                                            type="number" min="0" max="100" step="0.1"
-                                            name="taxRatePercent"
-                                            value={formData.taxRatePercent}
-                                            onChange={handleInputChange}
-                                            className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
-                                            placeholder="간이세액표 대신 % 적용 시"
-                                        />
-                                        <span className="absolute right-3 top-2 text-slate-400 text-sm">%</span>
-                                    </div>
-                                    <p className="text-xs text-slate-400 mt-1">* 미입력 시 간이세액 테이블(근로소득) 자동 적용</p>
+                                    <label className="text-sm font-bold text-slate-600 mb-1 flex items-center gap-1">
+                                        <span>자치구 복지포인트/수당</span>
+                                        <span className="text-xs text-blue-600 font-medium">(6월, 12월 지급분)</span>
+                                    </label>
+                                    <input
+                                        type="number" min="0"
+                                        name="districtAllowance"
+                                        value={formData.districtAllowance}
+                                        onChange={handleInputChange}
+                                        className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
+                                        placeholder="6월/12월에만 포함됨"
+                                    />
                                 </div>
                             </div>
                         </div>
@@ -280,8 +279,8 @@ export default function CalculatorLayout() {
                                 amount: parseInt(formData.corporationAllowance || 0),
                                 type: formData.corporationType
                             },
+                            district: parseInt(formData.districtAllowance || 0)
                         },
-                        taxRatePercent: formData.taxRatePercent
                     }}
                 />
             </div>
