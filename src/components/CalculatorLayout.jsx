@@ -11,7 +11,9 @@ export default function CalculatorLayout() {
         isManager: false,
         hasSpouse: false,
         numChildren: 0,
-        numOthers: 0
+        numOthers: 0,
+        corporationAllowance: 0,
+        districtAllowance: 0
     });
 
     const [salaryResult, setSalaryResult] = useState(null);
@@ -22,7 +24,11 @@ export default function CalculatorLayout() {
             isManager: formData.isManager,
             hasSpouse: formData.hasSpouse,
             numChildren: parseInt(formData.numChildren),
-            numOthers: parseInt(formData.numOthers)
+            numOthers: parseInt(formData.numOthers),
+            additionalAllowances: {
+                corporation: parseInt(formData.corporationAllowance || 0),
+                district: parseInt(formData.districtAllowance || 0)
+            }
         });
         setSalaryResult(result);
     }, [formData]);
@@ -50,7 +56,7 @@ export default function CalculatorLayout() {
                     {/* LEFT COLUMN: INPUTS (4 cols) - Flex col to stretch */}
                     <div className="lg:col-span-4 flex flex-col gap-6">
 
-                        {/* 1. Class & Hobong - Auto Height */}
+                        {/* 1. Class & Hobong */}
                         <BrickSection title="1. 직급 및 호봉" className="shrink-0">
                             <div className="space-y-5">
                                 <div>
@@ -78,9 +84,9 @@ export default function CalculatorLayout() {
                             </div>
                         </BrickSection>
 
-                        {/* 2. Allowance Info - Fills remaining space */}
-                        <BrickSection title="2. 수당 정보" className="flex-1 flex flex-col">
-                            <div className="flex-1 flex flex-col justify-center space-y-6">
+                        {/* 2. Allowance Info */}
+                        <BrickSection title="2. 수당 정보" className="shrink-0">
+                            <div className="space-y-6">
                                 <label className="flex items-center p-4 border-2 border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
                                     <input
                                         type="checkbox"
@@ -91,7 +97,7 @@ export default function CalculatorLayout() {
                                     <span className="ml-3 text-lg font-bold text-slate-700">관리자 수당 포함</span>
                                 </label>
 
-                                <div className="pt-6 border-t-2 border-dashed border-slate-300 flex-1 flex flex-col justify-center">
+                                <div className="pt-6 border-t-2 border-dashed border-slate-300">
                                     <div className="text-base font-black text-slate-400 mb-4">가족수당</div>
 
                                     <label className="flex items-center mb-6 p-2 cursor-pointer hover:bg-slate-50 rounded -ml-2">
@@ -127,6 +133,37 @@ export default function CalculatorLayout() {
                                 </div>
                             </div>
                         </BrickSection>
+
+                        {/* 3. Additional Custom Allowances - Flex 1 to fill space */}
+                        <BrickSection title="3. 추가 수당" className="flex-1 flex flex-col">
+                            <div className="flex-1 flex flex-col justify-center space-y-6">
+                                <div>
+                                    <label className="block text-base font-bold text-slate-600 mb-2">법인 수당</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number" min="0" placeholder="0"
+                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-8"
+                                            value={formData.corporationAllowance === 0 ? '' : formData.corporationAllowance}
+                                            onChange={(e) => setFormData({ ...formData, corporationAllowance: e.target.value })}
+                                        />
+                                        <span className="absolute right-3 top-3.5 text-slate-400 font-bold">원</span>
+                                    </div>
+                                </div>
+                                <div>
+                                    <label className="block text-base font-bold text-slate-600 mb-2">자치구 복지포인트/수당</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number" min="0" placeholder="0"
+                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-8"
+                                            value={formData.districtAllowance === 0 ? '' : formData.districtAllowance}
+                                            onChange={(e) => setFormData({ ...formData, districtAllowance: e.target.value })}
+                                        />
+                                        <span className="absolute right-3 top-3.5 text-slate-400 font-bold">원</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </BrickSection>
+
                     </div>
 
                     {/* RIGHT AREA: RESULTS (8 cols) */}

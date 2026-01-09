@@ -127,8 +127,12 @@ export function calculateSalary(grade, hobong, options = {}) {
   const familyAllowance = calculateFamilyAllowance(options.hasSpouse, options.numChildren, options.numOthers);
   const welfarePoints = hobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW;
 
+  // Custom Allowances
+  const corporationAllowance = options.additionalAllowances?.corporation || 0;
+  const districtAllowance = options.additionalAllowances?.district || 0;
+
   // Monthly Estimate
-  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance;
+  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + corporationAllowance + districtAllowance;
 
   // Annual
   const annualHoliday = baseSalary * 1.2;
@@ -153,15 +157,6 @@ export function calculateSalary(grade, hobong, options = {}) {
   const netPay = monthlyTotal - totalDeductions;
 
   // ESTIMATED ANNUAL NET PAY
-  // Assumption: Holiday Bonus (120% of Base) also has deductions (Tax + Employment Insurance).
-  // Pension/Health might be collected on bonus depending on annual income reconcilliation, but usually roughly proportional.
-  // For estimate, we subtract annualized deductions from annual total.
-  // Note: Tax rate on bonus might be higher due to progression, but using average monthly tax * 14 is a decent estimator for "Net".
-  // Or better: Annual Net = Annual Total - (Total Annual Deductions)
-  // Total Annual Deductions approx = Monthly Deductions * 12 + (Deductions on Holiday Bonus)
-  // Holiday Bonus Deductions approx = Holiday Bonus * (Employment Rate + Tax Estimation Rate)
-  // Let's simplified: Annual Net = Annual Total - (Total Monthly Deductions / Monthly Total * Annual Total) - correction?
-  // Let's stick to a clear approximation:
   const annualDeductions = totalDeductions * 12 + (annualHoliday * 0.1); // Rough 10% deduction on bonus
   const annualNetPay = annualTotal - annualDeductions;
 
@@ -170,6 +165,8 @@ export function calculateSalary(grade, hobong, options = {}) {
     mealAllowance,
     managerAllowance,
     familyAllowance,
+    corporationAllowance,
+    districtAllowance,
     welfarePoints,
     monthlyTotal,
     annualHoliday,
