@@ -2,7 +2,9 @@ import React from 'react';
 
 export default function SalaryResult({ result, grade, hobong }) {
     const formatMoney = (amount) => {
-        return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
+        const safeAmount = Number(amount) || 0;
+        if (isNaN(safeAmount)) return '₩0';
+        return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(safeAmount);
     };
 
     const ResultRow = ({ label, value, isTotal = false, isSub = false, isDeduction = false }) => (

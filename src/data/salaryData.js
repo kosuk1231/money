@@ -188,14 +188,28 @@ export function calculateSalary(grade, hobong, options = {}) {
   const totalDeductions = nationalPension + healthInsurance + longTermCare + employmentInsurance + incomeTax + localIncomeTax;
   const netPay = monthlyTotal - totalDeductions;
 
+  // Annual estimates for the summary box
+  // Holiday Bonus = 60% * 2 times = 120% of base salary
+  const annualHoliday = Math.floor(baseSalary * 1.2) || 0;
+  
+  // Welfare Points (Seoul City)
+  const welfarePoints = hobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW;
+  
+  // Annual Total (Pre-Tax) = (Monthly * 12) + Holiday Bonus + Welfare Points + District Allowance
+  const annualTotal = (monthlyTotal * 12) + annualHoliday + (welfarePoints || 0) + (annualDistrict || 0);
+  
+  // Annual Net Pay (Post-Tax) = (Net Pay * 12) + Holiday Bonus - estimated tax + Welfare Points + District Allowance
+  // For simplicity, estimate annual deductions by multiplying monthly deductions by 12
+  const annualNetPay = (netPay * 12) + annualHoliday + (welfarePoints || 0) + (annualDistrict || 0);
+
   return {
     baseSalary,
     mealAllowance,
     managerAllowance,
     familyAllowance,
     corporationAllowance: monthlyCorporation,
-    districtAllowance: annualDistrict, // Returning Annual Total for summary box
-    monthlyDistrictEstimate, // New: for verifying if it's added to monthly flow
+    districtAllowance: annualDistrict || 0, 
+    monthlyDistrictEstimate, 
     ordinaryWage, 
     monthlyTotal,
     deductions: {
@@ -207,7 +221,12 @@ export function calculateSalary(grade, hobong, options = {}) {
       localIncomeTax,
       total: totalDeductions
     },
-    netPay
+    netPay,
+    // Annual fields
+    annualHoliday,
+    welfarePoints: welfarePoints || 0,
+    annualTotal,
+    annualNetPay
   };
 }
 
