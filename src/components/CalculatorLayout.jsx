@@ -4,6 +4,33 @@ import SalaryResult from './SalaryResult';
 
 const GRADES = Object.keys(SALARY_TABLE);
 
+// Components defined OUTSIDE to prevent re-mounting on every render
+const BrickSection = ({ title, children, className = "" }) => (
+    <div className={`bg-white border-4 border-slate-800 rounded-xl p-5 shadow-[6px_6px_0px_0px_rgba(30,41,59,1)] ${className}`}>
+        <h3 className="text-xl font-black text-slate-800 border-b-2 border-slate-200 pb-2 mb-4">
+            {title}
+        </h3>
+        {children}
+    </div>
+);
+
+const TypeToggle = ({ value, onChange }) => (
+    <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
+        <button
+            className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${value === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            onClick={() => onChange('monthly')}
+        >
+            월
+        </button>
+        <button
+            className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${value === 'yearly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+            onClick={() => onChange('yearly')}
+        >
+            년
+        </button>
+    </div>
+);
+
 export default function CalculatorLayout() {
     const [formData, setFormData] = useState({
         grade: '4급',
@@ -40,32 +67,6 @@ export default function CalculatorLayout() {
         });
         setSalaryResult(result);
     }, [formData]);
-
-    const BrickSection = ({ title, children, className = "" }) => (
-        <div className={`bg-white border-4 border-slate-800 rounded-xl p-5 shadow-[6px_6px_0px_0px_rgba(30,41,59,1)] ${className}`}>
-            <h3 className="text-xl font-black text-slate-800 border-b-2 border-slate-200 pb-2 mb-4">
-                {title}
-            </h3>
-            {children}
-        </div>
-    );
-
-    const TypeToggle = ({ value, onChange }) => (
-        <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
-            <button
-                className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${value === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                onClick={() => onChange('monthly')}
-            >
-                월
-            </button>
-            <button
-                className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${value === 'yearly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-                onClick={() => onChange('yearly')}
-            >
-                년
-            </button>
-        </div>
-    );
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans">
