@@ -53,7 +53,7 @@ export default function CalculatorLayout() {
                 </header>
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                    {/* LEFT COLUMN: INPUTS (4 cols) - Flex col to stretch */}
+                    {/* LEFT COLUMN: INPUTS (lg:col-span-4) */}
                     <div className="lg:col-span-4 flex flex-col gap-6">
 
                         {/* 1. Class & Hobong */}
@@ -134,9 +134,9 @@ export default function CalculatorLayout() {
                             </div>
                         </BrickSection>
 
-                        {/* 3. Additional Custom Allowances - Flex 1 to fill space */}
+                        {/* 3. Additional Custom Allowances */}
                         <BrickSection title="3. 추가 수당" className="flex-1 flex flex-col">
-                            <div className="flex-1 flex flex-col justify-center space-y-6">
+                            <div className="flex-1 flex flex-col justify-center space-y-8">
                                 <div>
                                     <label className="block text-base font-bold text-slate-600 mb-2">법인 수당</label>
                                     <div className="relative">
@@ -166,7 +166,7 @@ export default function CalculatorLayout() {
 
                     </div>
 
-                    {/* RIGHT AREA: RESULTS (8 cols) */}
+                    {/* RIGHT AREA: RESULTS */}
                     <div className="lg:col-span-8 flex flex-col h-full">
                         {salaryResult && <SalaryResult result={salaryResult} grade={formData.grade} hobong={formData.hobong} />}
                     </div>

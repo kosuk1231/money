@@ -127,7 +127,7 @@ export function calculateSalary(grade, hobong, options = {}) {
   const familyAllowance = calculateFamilyAllowance(options.hasSpouse, options.numChildren, options.numOthers);
   const welfarePoints = hobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW;
 
-  // Custom Allowances
+  // Custom Allowances (Turned back to MONTHLY per new request, and NON-TAXABLE)
   const corporationAllowance = options.additionalAllowances?.corporation || 0;
   const districtAllowance = options.additionalAllowances?.district || 0;
 
@@ -139,7 +139,10 @@ export function calculateSalary(grade, hobong, options = {}) {
   const annualTotal = (monthlyTotal * 12) + annualHoliday + welfarePoints;
 
   // DEDUCTIONS
-  const taxableIncome = Math.max(0, monthlyTotal - mealAllowance); // Meal often nontaxable
+  // Taxable Income: Monthly Total - NonTaxable
+  // NonTaxable: Meal (130k) + CorporationAllowance + DistrictAllowance (User Request: "Welfare points and allowances are tax-free")
+  const nonTaxableAmount = mealAllowance + corporationAllowance + districtAllowance;
+  const taxableIncome = Math.max(0, monthlyTotal - nonTaxableAmount);
 
   const pensionIncome = Math.min(taxableIncome, 6170000);
   const nationalPension = Math.floor(pensionIncome * DEDUCTION_RATES.PENSION / 10) * 10;
@@ -157,7 +160,7 @@ export function calculateSalary(grade, hobong, options = {}) {
   const netPay = monthlyTotal - totalDeductions;
 
   // ESTIMATED ANNUAL NET PAY
-  const annualDeductions = totalDeductions * 12 + (annualHoliday * 0.1); // Rough 10% deduction on bonus
+  const annualDeductions = totalDeductions * 12 + (annualHoliday * 0.1);
   const annualNetPay = annualTotal - annualDeductions;
 
   return {
