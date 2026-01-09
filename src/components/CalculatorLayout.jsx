@@ -6,11 +6,11 @@ const GRADES = Object.keys(SALARY_TABLE);
 
 export default function CalculatorLayout() {
     const [formData, setFormData] = useState({
-        grade: '3급',
-        hobong: 16,
+        grade: '4급',
+        hobong: 1,
         isManager: false,
-        hasSpouse: true,
-        numChildren: 2,
+        hasSpouse: false,
+        numChildren: 0,
         numOthers: 0
     });
 
