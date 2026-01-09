@@ -138,12 +138,29 @@ export function calculateSalary(grade, hobong, options = {}) {
   const corpData = options.additionalAllowances?.corporation || { amount: 0, type: 'monthly' };
   let monthlyCorporation = corpData.type === 'yearly' ? Math.floor(corpData.amount / 12) : corpData.amount;
   
-  // District Allowance for Monthly Estimate:
-  // User said it is paid in June/Dec only.
-  // So for a "Normal" monthly estimate, it is 0.
-  // However, for the Annual Summary (Yellow Box), we want to return the total annual amount.
-  const distAmount = options.additionalAllowances?.district || 0;
-  const annualDistrict = distAmount * 2;
+  // District Allowance
+  // Structure: { type: 'none'|'point'|'allowance', amount: 0, frequency: 'monthly'|'yearly' }
+  const distData = options.additionalAllowances?.district || { type: 'none', amount: 0, frequency: 'monthly' };
+  
+  let annualDistrict = 0;
+  let monthlyDistrictEstimate = 0; // For the "Monthly Estimate" box
+
+  if (distData.type === 'point') {
+      // Welfare Point: Paid in Jun/Dec. 
+      // Monthly Estimate Box: 0 (User sees it in Annual Report)
+      // Annual Total: Amount * 2
+      monthlyDistrictEstimate = 0;
+      annualDistrict = distData.amount * 2;
+  } else if (distData.type === 'allowance') {
+      // Allowance: Paid Monthly or Yearly
+      if (distData.frequency === 'yearly') {
+          monthlyDistrictEstimate = Math.floor(distData.amount / 12);
+          annualDistrict = distData.amount;
+      } else {
+          monthlyDistrictEstimate = distData.amount;
+          annualDistrict = distData.amount * 12;
+      }
+  }
   
   // Ordinary Wage Calculation (New Formula)
   // Ordinary Wage = Base + (Annual Holiday Bonus / 12)
@@ -151,7 +168,7 @@ export function calculateSalary(grade, hobong, options = {}) {
   const ordinaryWage = baseSalary + Math.floor(annualHolidayTotal / 12);
 
   // Allowances Total (Monthly Normal)
-  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation;
+  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrictEstimate;
 
   // Deductions (Monthly Normal)
   const nonTaxableAmount = mealAllowance; // Meal is non-taxable
@@ -176,7 +193,8 @@ export function calculateSalary(grade, hobong, options = {}) {
     managerAllowance,
     familyAllowance,
     corporationAllowance: monthlyCorporation,
-    districtAllowance: annualDistrict,
+    districtAllowance: annualDistrict, // Returning Annual Total for summary box
+    monthlyDistrictEstimate, // New: for verifying if it's added to monthly flow
     ordinaryWage, 
     monthlyTotal,
     deductions: {
@@ -202,7 +220,9 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
   let annualTotalPostTax = 0;
   let annualHolidayTotal = 0;
 
-  const districtAllowanceAmount = options.additionalAllowances?.district || 0;
+  // District Allowance Logic for Report
+  const distData = options.additionalAllowances?.district || { type: 'none', amount: 0, frequency: 'monthly' };
+  let annualDistrictTotal = 0;
 
   for (let m = 1; m <= 12; m++) {
     // 1. Determine Hobong for this month
@@ -224,10 +244,20 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     const corpData = options.additionalAllowances?.corporation || { amount: 0, type: 'monthly' };
     let monthlyCorporation = corpData.type === 'yearly' ? Math.floor(corpData.amount / 12) : corpData.amount;
 
-    // District Allowance (June, Dec only)
+    // District Allowance (Report Logic)
     let monthlyDistrict = 0;
-    if (m === 6 || m === 12) {
-      monthlyDistrict = districtAllowanceAmount;
+    if (distData.type === 'point') {
+        // Jun & Dec
+        if (m === 6 || m === 12) {
+            monthlyDistrict = distData.amount;
+        }
+    } else if (distData.type === 'allowance') {
+        // Monthly or Yearly
+        if (distData.frequency === 'yearly') {
+            monthlyDistrict = Math.floor(distData.amount / 12);
+        } else {
+            monthlyDistrict = distData.amount;
+        }
     }
 
     // 3. Holiday Bonus (Feb, Sep) -> 60% of Base
@@ -263,7 +293,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
       managerAllowance,
       familyAllowance,
       corporationAllowance: monthlyCorporation,
-      districtAllowance: monthlyDistrict, // Passed for display if needed
+      districtAllowance: monthlyDistrict, 
       holidayBonus,
       monthlyTotal,
       taxable,
@@ -282,6 +312,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     annualTotalPreTax += monthlyTotal;
     annualTotalPostTax += netPay;
     annualHolidayTotal += holidayBonus;
+    annualDistrictTotal += monthlyDistrict;
   }
 
   // Add Welfare Points to Annual Total (Post-calculation)
@@ -298,7 +329,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
       annualPostTax: finalAnnualPostTax,
       annualHoliday: annualHolidayTotal,
       welfarePoints,
-      annualDistrict: districtAllowanceAmount * 2 // Verification helper
+      annualDistrict: annualDistrictTotal 
     }
   };
 }

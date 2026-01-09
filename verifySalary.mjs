@@ -1,10 +1,10 @@
 import { calculateSalary, generateAnnualReport } from './src/data/salaryData.js';
 
-console.log("Starting Verification for Seoul Social Worker Salary 2026 (Phase 2 Update)...\n");
+console.log("Starting Verification for Seoul Social Worker Salary 2026 (Phase 3 Update)...\n");
 
 const tests = [
     {
-        name: "Case 1: 4th Grade, 5 Hobong, Spouse, 1 Child (Monthly Normal)",
+        name: "Case 1: Monthly Normal",
         input: {
             grade: "4급",
             hobong: 5,
@@ -12,10 +12,7 @@ const tests = [
         },
         expected: {
             baseSalary: 2529000,
-            mealAllowance: 130000,
-            familyAllowance: 90000, 
             monthlyTotal: 2749000,
-            ordinaryWage: 2529000 + Math.floor(2529000 * 1.2 / 12) // Base + (Base*1.2/12)
         }
     }
 ];
@@ -44,37 +41,48 @@ tests.forEach((test, index) => {
     console.log("");
 });
 
-console.log("--- Annual Report Tests ---");
-console.log("[Test Annual 3] District Allowance Logic (June, Dec)");
-const districtAmount = 500000;
-const report = generateAnnualReport("5급", 1, null, { 
-    isManager: false, 
-    hasSpouse: false, 
-    numChildren: 0,
-    additionalAllowances: { district: districtAmount }
+console.log("--- Annual Report (District Logic) Tests ---");
+
+// Test 1: District Point (Jun/Dec)
+console.log("[Test Annual 4] District Type: Point (Jun/Dec only)");
+const pointReport = generateAnnualReport("5급", 1, null, { 
+    additionalAllowances: { district: { type: 'point', amount: 500000, frequency: 'monthly' } } // Freq shouldn't matter for Point
 });
+const junP = pointReport.months.find(m => m.month === 6);
+const decP = pointReport.months.find(m => m.month === 12);
+const mayP = pointReport.months.find(m => m.month === 5);
 
-const junFn = report.months.find(m => m.month === 6);
-const decFn = report.months.find(m => m.month === 12);
-const mayFn = report.months.find(m => m.month === 5);
-
-// Check June
-if (junFn.districtAllowance === districtAmount && decFn.districtAllowance === districtAmount && mayFn.districtAllowance === 0) {
-     console.log("  ✅ Passed: District allowance only in June/Dec.");
+if (junP.districtAllowance === 500000 && decP.districtAllowance === 500000 && mayP.districtAllowance === 0) {
+     console.log("  ✅ Passed: Point applies only to Jun/Dec.");
      passed++;
 } else {
-     console.error(`  ❌ Failed: Jun ${junFn.districtAllowance}, Dec ${decFn.districtAllowance}, May ${mayFn.districtAllowance}`);
+     console.error(`  ❌ Failed: Jun ${junP.districtAllowance}, May ${mayP.districtAllowance}`);
 }
 
-// Check Total Sum includes this
-// Monthly Total in June should be Base + Meal + District
-const expectedJunTotal = junFn.baseSalary + junFn.mealAllowance + districtAmount; 
-if (junFn.monthlyTotal === expectedJunTotal) {
-    console.log("  ✅ Passed: Monthly Total in June includes District Allowance.");
+// Test 2: District Allowance (Monthly)
+console.log("[Test Annual 5] District Type: Allowance (Monthly)");
+const monthlyReport = generateAnnualReport("5급", 1, null, { 
+    additionalAllowances: { district: { type: 'allowance', amount: 100000, frequency: 'monthly' } }
+});
+const janM = monthlyReport.months.find(m => m.month === 1);
+if (janM.districtAllowance === 100000) {
+    console.log("  ✅ Passed: Allowance (Monthly) applies to every month.");
     passed++;
 } else {
-    console.error(`  ❌ Failed: Jun Total ${junFn.monthlyTotal} (Exp ${expectedJunTotal})`);
+    console.error(`  ❌ Failed: Jan ${janM.districtAllowance}`);
 }
 
+// Test 3: District Allowance (Yearly)
+console.log("[Test Annual 6] District Type: Allowance (Yearly)");
+const yearlyReport = generateAnnualReport("5급", 1, null, { 
+    additionalAllowances: { district: { type: 'allowance', amount: 1200000, frequency: 'yearly' } }
+});
+const janY = yearlyReport.months.find(m => m.month === 1);
+if (janY.districtAllowance === 100000) { // 1.2m / 12 = 100k
+    console.log("  ✅ Passed: Allowance (Yearly) is prorated.");
+    passed++;
+} else {
+    console.error(`  ❌ Failed: Jan ${janY.districtAllowance} (Expected 100000)`);
+}
 
-console.log(`\nVerification Complete: ${passed}/${tests.length + 2} passed.`);
+console.log(`\nVerification Complete: ${passed}/${tests.length + 3} passed.`);

@@ -108,14 +108,21 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                         <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <label className="block text-sm font-bold text-slate-600 mb-2">시간외 근무 (시간)</label>
-                            <div className="relative">
-                                <input
-                                    type="number" min="0"
-                                    className="w-full border-2 border-slate-300 rounded-lg p-2 font-bold focus:border-blue-500 outline-none"
-                                    value={monthDetails.overtimeHours}
-                                    onChange={(e) => setMonthDetails({ ...monthDetails, overtimeHours: parseInt(e.target.value) || 0 })}
-                                />
-                                <span className="absolute right-3 top-2.5 text-slate-400 text-sm">시간</span>
+                            <div className="relative flex items-center">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={monthDetails.overtimeHours || ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setMonthDetails(prev => ({
+                                                ...prev,
+                                                overtimeHours: val === '' ? 0 : parseInt(val)
+                                            }));
+                                        }}
+                                        className="w-32 text-right p-2 border border-slate-300 rounded font-bold focus:border-blue-500 outline-none"
+                                    />
+                                    <span className="ml-1 text-slate-600">시간</span>
                             </div>
                         </div>
 

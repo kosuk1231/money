@@ -8,14 +8,16 @@ export default function CalculatorLayout() {
     const [formData, setFormData] = useState({
         grade: '4급',
         hobong: 5,
-        promotionMonth: '', // '' represents 'No promotion' or 'Not selected'
+        promotionMonth: '', 
         isManager: false,
         hasSpouse: false,
         numChildren: 0,
         numOthers: 0,
         corporationAllowance: 0,
-        corporationType: 'monthly', // monthly | yearly
-        districtAllowance: 0, // New: District Welfare June/Dec
+        corporationType: 'monthly', 
+        districtType: 'none',   // none | point | allowance
+        districtAmount: 0, 
+        districtFrequency: 'monthly' // monthly | yearly (only for allowance)
     });
 
     const [salaryResult, setSalaryResult] = useState(null);
@@ -23,6 +25,13 @@ export default function CalculatorLayout() {
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
     useEffect(() => {
+        // Prepare District Data Object
+        const districtData = {
+            type: formData.districtType,
+            amount: parseInt(formData.districtAmount || 0),
+            frequency: formData.districtFrequency
+        };
+
         // Calculate Monthly Estimate (Normal Month)
         const result = calculateSalary(formData.grade, parseInt(formData.hobong), {
             isManager: formData.isManager,
@@ -34,7 +43,7 @@ export default function CalculatorLayout() {
                     amount: parseInt(formData.corporationAllowance || 0),
                     type: formData.corporationType
                 },
-                district: parseInt(formData.districtAllowance || 0)
+                district: districtData
             }
         });
         setSalaryResult(result);
@@ -50,7 +59,7 @@ export default function CalculatorLayout() {
                     amount: parseInt(formData.corporationAllowance || 0),
                     type: formData.corporationType
                 },
-                district: parseInt(formData.districtAllowance || 0)
+                district: districtData
             }
         });
         setAnnualReport(report);
@@ -218,18 +227,52 @@ export default function CalculatorLayout() {
 
                                 {/* District Allowance (New) */}
                                 <div className="pt-2">
-                                    <label className="text-sm font-bold text-slate-600 mb-1 flex items-center gap-1">
-                                        <span>자치구 복지포인트/수당</span>
-                                        <span className="text-xs text-blue-600 font-medium">(6월, 12월 지급분)</span>
-                                    </label>
-                                    <input
-                                        type="number" min="0"
-                                        name="districtAllowance"
-                                        value={formData.districtAllowance}
-                                        onChange={handleInputChange}
-                                        className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
-                                        placeholder="6월/12월에만 포함됨"
-                                    />
+                                    <label className="block text-sm font-bold text-slate-600 mb-1">자치구 복지포인트/수당</label>
+                                    <div className="space-y-2">
+                                        {/* Type Selector */}
+                                        <select
+                                            name="districtType"
+                                            value={formData.districtType}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border border-slate-300 rounded font-bold text-sm bg-slate-50"
+                                        >
+                                            <option value="none">없음</option>
+                                            <option value="point">자치구 복지포인트 (6월/12월)</option>
+                                            <option value="allowance">자치구 수당</option>
+                                        </select>
+
+                                        {/* Amount & Frequency (Conditionally Rendered) */}
+                                        {formData.districtType !== 'none' && (
+                                            <div className="flex gap-2 animate-fadeIn">
+                                                <input
+                                                    type="number" min="0"
+                                                    name="districtAmount"
+                                                    value={formData.districtAmount}
+                                                    onChange={handleInputChange}
+                                                    className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
+                                                    placeholder="금액 입력"
+                                                />
+                                                {/* Frequency Selector: Only for 'allowance' */}
+                                                {formData.districtType === 'allowance' && (
+                                                    <select
+                                                        name="districtFrequency"
+                                                        value={formData.districtFrequency}
+                                                        onChange={handleInputChange}
+                                                        className="p-2 border border-slate-300 rounded font-bold text-sm bg-slate-50"
+                                                    >
+                                                        <option value="monthly">매월</option>
+                                                        <option value="yearly">연1회</option>
+                                                    </select>
+                                                )}
+                                                {/* For 'point', no selector (fixed Jun/Dec), so we can perhaps show a fixed label or nothing */}
+                                                {formData.districtType === 'point' && (
+                                                    <div className="p-2 bg-slate-100 text-xs text-slate-500 rounded flex items-center whitespace-nowrap">
+                                                        6월, 12월
+                                                    </div>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -279,7 +322,7 @@ export default function CalculatorLayout() {
                                 amount: parseInt(formData.corporationAllowance || 0),
                                 type: formData.corporationType
                             },
-                            district: parseInt(formData.districtAllowance || 0)
+                            district: districtData
                         },
                     }}
                 />
