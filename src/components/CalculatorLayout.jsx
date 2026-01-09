@@ -110,7 +110,7 @@ export default function CalculatorLayout() {
                         </BrickSection>
 
                         {/* 2. Allowance Info */}
-                        <BrickSection title="2. 수당 정보" className="shrink-0">
+                        <BrickSection title="2. 수당 정보" className="flex-[1] flex flex-col justify-center">
                             <div className="space-y-6">
                                 <label className="flex items-center p-4 border-2 border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
                                     <input
@@ -160,7 +160,7 @@ export default function CalculatorLayout() {
                         </BrickSection>
 
                         {/* 3. Additional Custom Allowances */}
-                        <BrickSection title="3. 추가 수당" className="flex-1 flex flex-col">
+                        <BrickSection title="3. 추가 수당" className="flex-[1] flex flex-col">
                             <div className="flex-1 flex flex-col justify-around">
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
