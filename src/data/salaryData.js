@@ -106,7 +106,7 @@ export function calculateFamilyAllowance(hasSpouse, numChildren, numOthers) {
 }
 
 // Simple simplified tax estimator (approximate for display)
-function calculateIncomeTax(taxableMonthly, numPeople, taxRatePercent) {
+export function calculateIncomeTax(taxableMonthly, numPeople, taxRatePercent) {
   // If user provided a specific tax rate, use it (simplified)
   if (taxRatePercent !== undefined && taxRatePercent !== null && taxRatePercent !== '') {
     return Math.floor(taxableMonthly * (parseFloat(taxRatePercent) / 100) / 10) * 10;
