@@ -36,6 +36,7 @@ export default function SalaryResult({ result, grade, hobong }) {
                             {result.managerAllowance > 0 && <ResultRow label="관리자수당" value={result.managerAllowance} />}
                             {result.familyAllowance > 0 && <ResultRow label="가족수당" value={result.familyAllowance} />}
                             {result.corporationAllowance > 0 && <ResultRow label="법인/직책 수당" value={result.corporationAllowance} />}
+                            {result.overtimePay > 0 && <ResultRow label="시간외 근무수당" value={result.overtimePay} />}
                         </div>
                     </div>
                     <div className="mt-4 pt-3 border-t-4 border-slate-800">

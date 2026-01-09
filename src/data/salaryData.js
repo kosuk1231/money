@@ -154,18 +154,28 @@ export function calculateSalary(grade, hobong, options = {}) {
   }
 
   // Monthly Estimate
-  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation; // Removed monthlyDistrict
+  // Ordinary Wage for Overtime: Base + Fixed Meals + Manager + Fixed Job(Corporation)
+  // Assuming 'Corporation' allowance is fixed Job allowance if set to monthly.
+  // NOTE: If Corporation is yearly, it might not be ordinary wage, but for simplicity we'll include the monthly portion.
+  const ordinaryWage = baseSalary + mealAllowance + managerAllowance + monthlyCorporation;
+  const overtimeRate = 1.5;
+  const overtimePay = Math.floor((ordinaryWage / 209) * overtimeRate * (options.overtimeHours || 0));
+
+  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + overtimePay; // Removed monthlyDistrict
 
   // Annual
   const annualHoliday = baseSalary * 1.2;
   const annualBaseTotal = (baseSalary + mealAllowance + managerAllowance + familyAllowance) * 12;
-  const annualTotal = annualBaseTotal + annualCorporation + annualDistrict + annualHoliday + welfarePoints;
+  const annualTotal = annualBaseTotal + annualCorporation + annualDistrict + annualHoliday + welfarePoints + (overtimePay * 12);
 
   // DEDUCTIONS
   // Taxable Income: Monthly Total - NonTaxable
   // NonTaxable: Meal (130k) + CorporationAllowance + DistrictAllowance (NonTaskable as per user request)
   // District Allowance removed from monthly, so removed from non-taxable here too (it's not in the total)
   const nonTaxableAmount = mealAllowance + monthlyCorporation;
+
+  // IMPORTANT: Overtime is generally taxable.
+  // If monthlyTotal includes overtime, and we subtract nonTaxable, overtime remains in taxable.
   const taxableIncome = Math.max(0, monthlyTotal - nonTaxableAmount);
 
   const pensionIncome = Math.min(taxableIncome, 6170000);
@@ -194,6 +204,7 @@ export function calculateSalary(grade, hobong, options = {}) {
     familyAllowance,
     corporationAllowance: monthlyCorporation,
     districtAllowance: annualDistrict, // Changed to return Annual amount for display
+    overtimePay,
     welfarePoints,
     monthlyTotal,
     annualHoliday,

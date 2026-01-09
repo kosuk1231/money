@@ -42,7 +42,8 @@ export default function CalculatorLayout() {
         corporationAllowance: 0,
         corporationType: 'monthly', // 'monthly' or 'yearly'
         districtAllowance: 0,
-        districtType: 'monthly' // 'monthly' or 'yearly'
+        districtType: 'monthly', // 'monthly' or 'yearly'
+        overtimeHours: 0
     });
 
     const [salaryResult, setSalaryResult] = useState(null);
@@ -54,6 +55,7 @@ export default function CalculatorLayout() {
             hasSpouse: formData.hasSpouse,
             numChildren: parseInt(formData.numChildren),
             numOthers: parseInt(formData.numOthers),
+            overtimeHours: parseFloat(formData.overtimeHours || 0),
             additionalAllowances: {
                 corporation: {
                     amount: parseInt(formData.corporationAllowance || 0),
@@ -197,6 +199,18 @@ export default function CalculatorLayout() {
                                             onChange={(e) => setFormData({ ...formData, districtAllowance: e.target.value })}
                                         />
                                         <span className="absolute right-3 top-3.5 text-slate-400 font-bold">원</span>
+                                    </div>
+                                </div>
+                                <div className="mt-4 pt-4 border-t border-dashed border-slate-300">
+                                    <label className="block text-base font-bold text-slate-600 mb-2">시간외 근무 (시간)</label>
+                                    <div className="relative">
+                                        <input
+                                            type="number" min="0" placeholder="0"
+                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-12 no-spinner"
+                                            value={formData.overtimeHours === 0 ? '' : formData.overtimeHours}
+                                            onChange={(e) => setFormData({ ...formData, overtimeHours: e.target.value })}
+                                        />
+                                        <span className="absolute right-3 top-3.5 text-slate-400 font-bold">시간</span>
                                     </div>
                                 </div>
                             </div>
