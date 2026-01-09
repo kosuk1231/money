@@ -146,11 +146,12 @@ export function calculateSalary(grade, hobong, options = {}) {
   let monthlyDistrictEstimate = 0; // For the "Monthly Estimate" box
 
   if (distData.type === 'point') {
-      // Welfare Point: Paid in Jun/Dec. 
+      // Welfare Point: Paid in Jun/Dec.
+      // Input Amount is "Annual Total".
       // Monthly Estimate Box: 0 (User sees it in Annual Report)
-      // Annual Total: Amount * 2
+      // Annual Total: Amount (Input is already annual total)
       monthlyDistrictEstimate = 0;
-      annualDistrict = distData.amount * 2;
+      annualDistrict = distData.amount;
   } else if (distData.type === 'allowance') {
       // Allowance: Paid Monthly or Yearly
       if (distData.frequency === 'yearly') {
@@ -247,9 +248,9 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     // District Allowance (Report Logic)
     let monthlyDistrict = 0;
     if (distData.type === 'point') {
-        // Jun & Dec
+        // Jun & Dec. Input is "Annual Total", so pay half each time.
         if (m === 6 || m === 12) {
-            monthlyDistrict = distData.amount;
+            monthlyDistrict = Math.floor(distData.amount / 2);
         }
     } else if (distData.type === 'allowance') {
         // Monthly or Yearly

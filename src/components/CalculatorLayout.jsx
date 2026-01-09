@@ -225,49 +225,90 @@ export default function CalculatorLayout() {
                                     </div>
                                 </div>
 
-                                {/* District Allowance (New) */}
-                                <div className="pt-2">
-                                    <label className="block text-sm font-bold text-slate-600 mb-1">자치구 복지포인트/수당</label>
-                                    <div className="space-y-2">
-                                        {/* Type Selector */}
-                                        <select
-                                            name="districtType"
-                                            value={formData.districtType}
-                                            onChange={handleInputChange}
-                                            className="w-full p-2 border border-slate-300 rounded font-bold text-sm bg-slate-50"
-                                        >
-                                            <option value="none">없음</option>
-                                            <option value="point">자치구 복지포인트 (6월/12월)</option>
-                                            <option value="allowance">자치구 수당</option>
-                                        </select>
-
-                                        {/* Amount & Frequency (Conditionally Rendered) */}
-                                        {formData.districtType !== 'none' && (
-                                            <div className="flex gap-2 animate-fadeIn">
-                                                <input
-                                                    type="number" min="0"
-                                                    name="districtAmount"
-                                                    value={formData.districtAmount}
-                                                    onChange={handleInputChange}
-                                                    className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
-                                                    placeholder="금액 입력"
-                                                />
-                                                {/* Frequency Selector: Only for 'allowance' */}
-                                                {formData.districtType === 'allowance' && (
-                                                    <select
-                                                        name="districtFrequency"
-                                                        value={formData.districtFrequency}
+                                {/* District Allowance Section */}
+                                <div className="mt-6 pt-4 border-t border-slate-200">
+                                    <h3 className="text-md font-black text-slate-800 mb-3 flex items-center gap-2">
+                                        <span className="text-xl">🎁</span> 자치구 추가 혜택
+                                    </h3>
+                                    
+                                    <div className="space-y-4">
+                                        {/* Type Selector (Radio) */}
+                                        <div className="flex flex-col gap-2">
+                                            {['none', 'point', 'allowance'].map((typeOption) => (
+                                                <label key={typeOption} className="flex items-center cursor-pointer">
+                                                    <input
+                                                        type="radio"
+                                                        name="districtType"
+                                                        value={typeOption}
+                                                        checked={formData.districtType === typeOption}
                                                         onChange={handleInputChange}
-                                                        className="p-2 border border-slate-300 rounded font-bold text-sm bg-slate-50"
-                                                    >
-                                                        <option value="monthly">매월</option>
-                                                        <option value="yearly">연1회</option>
-                                                    </select>
-                                                )}
-                                                {/* For 'point', no selector (fixed Jun/Dec), so we can perhaps show a fixed label or nothing */}
+                                                        className="w-4 h-4 text-blue-600 focus:ring-blue-500 border-gray-300"
+                                                    />
+                                                    <span className="ml-2 text-sm font-bold text-slate-700">
+                                                        {typeOption === 'none' && '없음'}
+                                                        {typeOption === 'point' && '자치구 복지포인트'}
+                                                        {typeOption === 'allowance' && '자치구 수당'}
+                                                    </span>
+                                                </label>
+                                            ))}
+                                        </div>
+
+                                        {/* Dynamic Inputs based on selection */}
+                                        {formData.districtType !== 'none' && (
+                                            <div className="animate-fadeIn p-3 bg-slate-50 rounded-lg border border-slate-200 space-y-3">
+                                                
+                                                {/* Welfare Point Logic */}
                                                 {formData.districtType === 'point' && (
-                                                    <div className="p-2 bg-slate-100 text-xs text-slate-500 rounded flex items-center whitespace-nowrap">
-                                                        6월, 12월
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">
+                                                            연간 복지포인트 총액 (원)
+                                                        </label>
+                                                        <div className="flex items-center gap-2">
+                                                            <input
+                                                                type="number" min="0"
+                                                                name="districtAmount"
+                                                                value={formData.districtAmount}
+                                                                onChange={handleInputChange}
+                                                                className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
+                                                                placeholder="예: 1200000"
+                                                            />
+                                                        </div>
+                                                        <p className="text-xs text-blue-600 mt-1 font-medium">
+                                                            * 6월, 12월에 각각 50%씩 배분됩니다.
+                                                        </p>
+                                                    </div>
+                                                )}
+
+                                                {/* Allowance Logic */}
+                                                {formData.districtType === 'allowance' && (
+                                                    <div>
+                                                        <label className="block text-xs font-bold text-slate-500 mb-1">
+                                                            수당 금액 (원)
+                                                        </label>
+                                                        <div className="flex gap-2">
+                                                            <input
+                                                                type="number" min="0"
+                                                                name="districtAmount"
+                                                                value={formData.districtAmount}
+                                                                onChange={handleInputChange}
+                                                                className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
+                                                                placeholder="금액 입력"
+                                                            />
+                                                            <select
+                                                                name="districtFrequency"
+                                                                value={formData.districtFrequency}
+                                                                onChange={handleInputChange}
+                                                                className="p-2 border border-slate-300 rounded font-bold text-sm bg-white"
+                                                            >
+                                                                <option value="monthly">매월</option>
+                                                                <option value="yearly">매년</option>
+                                                            </select>
+                                                        </div>
+                                                        {formData.districtFrequency === 'yearly' && (
+                                                            <p className="text-xs text-slate-500 mt-1">
+                                                                * 연간 금액을 12개월로 나누어 계산합니다.
+                                                            </p>
+                                                        )}
                                                     </div>
                                                 )}
                                             </div>

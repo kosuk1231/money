@@ -120,7 +120,8 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                                                 overtimeHours: val === '' ? 0 : parseInt(val)
                                             }));
                                         }}
-                                        className="w-32 text-right p-2 border border-slate-300 rounded font-bold focus:border-blue-500 outline-none"
+                                        placeholder="0"
+                                        className="w-32 text-right p-2 border border-slate-300 rounded font-bold focus:border-blue-500 outline-none placeholder:text-slate-300"
                                     />
                                     <span className="ml-1 text-slate-600">시간</span>
                             </div>

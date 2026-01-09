@@ -44,19 +44,20 @@ tests.forEach((test, index) => {
 console.log("--- Annual Report (District Logic) Tests ---");
 
 // Test 1: District Point (Jun/Dec)
-console.log("[Test Annual 4] District Type: Point (Jun/Dec only)");
+console.log("[Test Annual 4] District Type: Point (Annual Total input, split 50%)");
 const pointReport = generateAnnualReport("5급", 1, null, { 
-    additionalAllowances: { district: { type: 'point', amount: 500000, frequency: 'monthly' } } // Freq shouldn't matter for Point
+    additionalAllowances: { district: { type: 'point', amount: 1200000, frequency: 'monthly' } } // Freq ignored
 });
 const junP = pointReport.months.find(m => m.month === 6);
 const decP = pointReport.months.find(m => m.month === 12);
 const mayP = pointReport.months.find(m => m.month === 5);
 
-if (junP.districtAllowance === 500000 && decP.districtAllowance === 500000 && mayP.districtAllowance === 0) {
-     console.log("  ✅ Passed: Point applies only to Jun/Dec.");
+// Expected: 1,200,000 / 2 = 600,000 per payment
+if (junP.districtAllowance === 600000 && decP.districtAllowance === 600000 && mayP.districtAllowance === 0) {
+     console.log("  ✅ Passed: Point amount divided by 2 and applied to Jun/Dec.");
      passed++;
 } else {
-     console.error(`  ❌ Failed: Jun ${junP.districtAllowance}, May ${mayP.districtAllowance}`);
+     console.error(`  ❌ Failed: Jun ${junP.districtAllowance} (Exp 600000)`);
 }
 
 // Test 2: District Allowance (Monthly)
