@@ -127,21 +127,44 @@ export function calculateSalary(grade, hobong, options = {}) {
   const familyAllowance = calculateFamilyAllowance(options.hasSpouse, options.numChildren, options.numOthers);
   const welfarePoints = hobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW;
 
-  // Custom Allowances (Turned back to MONTHLY per new request, and NON-TAXABLE)
-  const corporationAllowance = options.additionalAllowances?.corporation || 0;
-  const districtAllowance = options.additionalAllowances?.district || 0;
+  // Custom Allowances
+  const corpData = options.additionalAllowances?.corporation || { amount: 0, type: 'monthly' };
+  const distData = options.additionalAllowances?.district || { amount: 0, type: 'monthly' };
+
+  let monthlyCorporation = 0;
+  let annualCorporation = 0;
+
+  if (corpData.type === 'yearly') {
+    monthlyCorporation = Math.floor(corpData.amount / 12);
+    annualCorporation = corpData.amount;
+  } else {
+    monthlyCorporation = corpData.amount;
+    annualCorporation = corpData.amount * 12;
+  }
+
+  let monthlyDistrict = 0;
+  let annualDistrict = 0;
+
+  if (distData.type === 'yearly') {
+    monthlyDistrict = Math.floor(distData.amount / 12);
+    annualDistrict = distData.amount;
+  } else {
+    monthlyDistrict = distData.amount;
+    annualDistrict = distData.amount * 12;
+  }
 
   // Monthly Estimate
-  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + corporationAllowance + districtAllowance;
+  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrict;
 
   // Annual
   const annualHoliday = baseSalary * 1.2;
-  const annualTotal = (monthlyTotal * 12) + annualHoliday + welfarePoints;
+  const annualBaseTotal = (baseSalary + mealAllowance + managerAllowance + familyAllowance) * 12;
+  const annualTotal = annualBaseTotal + annualCorporation + annualDistrict + annualHoliday + welfarePoints;
 
   // DEDUCTIONS
   // Taxable Income: Monthly Total - NonTaxable
-  // NonTaxable: Meal (130k) + CorporationAllowance + DistrictAllowance (User Request: "Welfare points and allowances are tax-free")
-  const nonTaxableAmount = mealAllowance + corporationAllowance + districtAllowance;
+  // NonTaxable: Meal (130k) + CorporationAllowance + DistrictAllowance (NonTaskable as per user request)
+  const nonTaxableAmount = mealAllowance + monthlyCorporation + monthlyDistrict;
   const taxableIncome = Math.max(0, monthlyTotal - nonTaxableAmount);
 
   const pensionIncome = Math.min(taxableIncome, 6170000);
@@ -168,8 +191,8 @@ export function calculateSalary(grade, hobong, options = {}) {
     mealAllowance,
     managerAllowance,
     familyAllowance,
-    corporationAllowance,
-    districtAllowance,
+    corporationAllowance: monthlyCorporation,
+    districtAllowance: monthlyDistrict,
     welfarePoints,
     monthlyTotal,
     annualHoliday,

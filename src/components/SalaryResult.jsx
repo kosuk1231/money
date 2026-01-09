@@ -19,7 +19,7 @@ export default function SalaryResult({ result, grade, hobong }) {
     const holidayBonusPerTime = result.baseSalary * 0.6;
 
     return (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 h-full content-start">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-rows-[auto_auto_1fr] gap-6 h-full">
             {/* 1. Monthly (Top Left) */}
             <div className="bg-white border-4 border-slate-800 rounded-xl p-6 shadow-[6px_6px_0px_0px_rgba(30,41,59,1)] flex flex-col justify-between">
                 <div>
@@ -69,7 +69,7 @@ export default function SalaryResult({ result, grade, hobong }) {
             </div>
 
             {/* 4. Annual (Bottom Span) */}
-            <div className="md:col-span-2 bg-yellow-50 border-4 border-yellow-800 rounded-xl p-6 shadow-[6px_6px_0px_0px_rgba(161,98,7,0.3)]">
+            <div className="md:col-span-2 bg-yellow-50 border-4 border-yellow-800 rounded-xl p-6 shadow-[6px_6px_0px_0px_rgba(161,98,7,0.3)] h-full">
                 <h2 className="text-xl font-black text-yellow-900 mb-4 border-b-2 border-yellow-200 pb-2">연봉 예상액</h2>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8">

@@ -13,7 +13,9 @@ export default function CalculatorLayout() {
         numChildren: 0,
         numOthers: 0,
         corporationAllowance: 0,
-        districtAllowance: 0
+        corporationType: 'monthly', // 'monthly' or 'yearly'
+        districtAllowance: 0,
+        districtType: 'monthly' // 'monthly' or 'yearly'
     });
 
     const [salaryResult, setSalaryResult] = useState(null);
@@ -26,8 +28,14 @@ export default function CalculatorLayout() {
             numChildren: parseInt(formData.numChildren),
             numOthers: parseInt(formData.numOthers),
             additionalAllowances: {
-                corporation: parseInt(formData.corporationAllowance || 0),
-                district: parseInt(formData.districtAllowance || 0)
+                corporation: {
+                    amount: parseInt(formData.corporationAllowance || 0),
+                    type: formData.corporationType
+                },
+                district: {
+                    amount: parseInt(formData.districtAllowance || 0),
+                    type: formData.districtType
+                }
             }
         });
         setSalaryResult(result);
@@ -39,6 +47,23 @@ export default function CalculatorLayout() {
                 {title}
             </h3>
             {children}
+        </div>
+    );
+
+    const TypeToggle = ({ value, onChange }) => (
+        <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
+            <button
+                className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${value === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                onClick={() => onChange('monthly')}
+            >
+                월
+            </button>
+            <button
+                className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${value === 'yearly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
+                onClick={() => onChange('yearly')}
+            >
+                년
+            </button>
         </div>
     );
 
@@ -54,7 +79,7 @@ export default function CalculatorLayout() {
 
                 <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
                     {/* LEFT COLUMN: INPUTS (lg:col-span-4) */}
-                    <div className="lg:col-span-4 flex flex-col gap-6">
+                    <div className="lg:col-span-4 flex flex-col gap-6 h-full">
 
                         {/* 1. Class & Hobong */}
                         <BrickSection title="1. 직급 및 호봉" className="shrink-0">
@@ -138,7 +163,13 @@ export default function CalculatorLayout() {
                         <BrickSection title="3. 추가 수당" className="flex-1 flex flex-col">
                             <div className="flex-1 flex flex-col justify-around">
                                 <div>
-                                    <label className="block text-base font-bold text-slate-600 mb-2">법인 수당</label>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="block text-base font-bold text-slate-600">법인 수당</label>
+                                        <TypeToggle
+                                            value={formData.corporationType}
+                                            onChange={(val) => setFormData({ ...formData, corporationType: val })}
+                                        />
+                                    </div>
                                     <div className="relative">
                                         <input
                                             type="number" min="0" placeholder="0"
@@ -150,7 +181,13 @@ export default function CalculatorLayout() {
                                     </div>
                                 </div>
                                 <div>
-                                    <label className="block text-base font-bold text-slate-600 mb-2">자치구 복지포인트/수당</label>
+                                    <div className="flex justify-between items-center mb-2">
+                                        <label className="block text-base font-bold text-slate-600">자치구 복지포인트/수당</label>
+                                        <TypeToggle
+                                            value={formData.districtType}
+                                            onChange={(val) => setFormData({ ...formData, districtType: val })}
+                                        />
+                                    </div>
                                     <div className="relative">
                                         <input
                                             type="number" min="0" placeholder="0"
