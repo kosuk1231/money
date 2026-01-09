@@ -36,6 +36,13 @@ export default function SalaryResult({ result, grade, hobong }) {
                             {result.managerAllowance > 0 && <ResultRow label="관리자수당" value={result.managerAllowance} />}
                             {result.familyAllowance > 0 && <ResultRow label="가족수당" value={result.familyAllowance} />}
                             {result.corporationAllowance > 0 && <ResultRow label="법인/직책 수당" value={result.corporationAllowance} />}
+                            
+                            <div className="my-2 border-t border-slate-100 pt-2">
+                                <div className="flex justify-between items-center py-1">
+                                    <span className="text-sm font-bold text-slate-500">나의 통상임금</span>
+                                    <span className="text-sm font-bold text-slate-600">{new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(result.ordinaryWage)}</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     <div className="mt-4 pt-3 border-t-4 border-slate-800">
