@@ -165,7 +165,7 @@ export default function CalculatorLayout() {
                             <div className="flex-1 flex flex-col justify-around">
                                 <div>
                                     <div className="flex justify-between items-center mb-2">
-                                        <label className="block text-base font-bold text-slate-600">법인 수당</label>
+                                        <label className="block text-base font-bold text-slate-600">법인/직책 수당</label>
                                         <TypeToggle
                                             value={formData.corporationType}
                                             onChange={(val) => setFormData({ ...formData, corporationType: val })}

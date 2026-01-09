@@ -35,8 +35,7 @@ export default function SalaryResult({ result, grade, hobong }) {
                             <ResultRow label="정액급식비" value={result.mealAllowance} />
                             {result.managerAllowance > 0 && <ResultRow label="관리자수당" value={result.managerAllowance} />}
                             {result.familyAllowance > 0 && <ResultRow label="가족수당" value={result.familyAllowance} />}
-                            {result.corporationAllowance > 0 && <ResultRow label="법인 수당" value={result.corporationAllowance} />}
-                            {result.districtAllowance > 0 && <ResultRow label="자치구 수당" value={result.districtAllowance} />}
+                            {result.corporationAllowance > 0 && <ResultRow label="법인/직책 수당" value={result.corporationAllowance} />}
                         </div>
                     </div>
                     <div className="mt-4 pt-3 border-t-4 border-slate-800">
@@ -85,9 +84,15 @@ export default function SalaryResult({ result, grade, hobong }) {
                             <span>{formatMoney(result.annualHoliday)}</span>
                         </div>
                         <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
-                            <span>복지포인트</span>
+                            <span>서울시 복지포인트</span>
                             <span>{formatMoney(result.welfarePoints)}</span>
                         </div>
+                        {result.districtAllowance > 0 && (
+                            <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
+                                <span>자치구 복지포인트/수당</span>
+                                <span>{formatMoney(result.districtAllowance)}</span>
+                            </div>
+                        )}
                     </div>
 
                     <div className="flex flex-col justify-center space-y-3 md:border-l-2 md:border-yellow-200 md:pl-8">

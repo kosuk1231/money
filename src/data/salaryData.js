@@ -154,7 +154,7 @@ export function calculateSalary(grade, hobong, options = {}) {
   }
 
   // Monthly Estimate
-  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrict;
+  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation; // Removed monthlyDistrict
 
   // Annual
   const annualHoliday = baseSalary * 1.2;
@@ -164,7 +164,8 @@ export function calculateSalary(grade, hobong, options = {}) {
   // DEDUCTIONS
   // Taxable Income: Monthly Total - NonTaxable
   // NonTaxable: Meal (130k) + CorporationAllowance + DistrictAllowance (NonTaskable as per user request)
-  const nonTaxableAmount = mealAllowance + monthlyCorporation + monthlyDistrict;
+  // District Allowance removed from monthly, so removed from non-taxable here too (it's not in the total)
+  const nonTaxableAmount = mealAllowance + monthlyCorporation;
   const taxableIncome = Math.max(0, monthlyTotal - nonTaxableAmount);
 
   const pensionIncome = Math.min(taxableIncome, 6170000);
@@ -192,7 +193,7 @@ export function calculateSalary(grade, hobong, options = {}) {
     managerAllowance,
     familyAllowance,
     corporationAllowance: monthlyCorporation,
-    districtAllowance: monthlyDistrict,
+    districtAllowance: annualDistrict, // Changed to return Annual amount for display
     welfarePoints,
     monthlyTotal,
     annualHoliday,
