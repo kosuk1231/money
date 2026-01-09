@@ -363,7 +363,11 @@ export default function CalculatorLayout() {
                                 amount: parseInt(formData.corporationAllowance || 0),
                                 type: formData.corporationType
                             },
-                            district: districtData
+                            district: {
+                                type: formData.districtType,
+                                amount: parseInt(formData.districtAmount || 0),
+                                frequency: formData.districtFrequency
+                            }
                         },
                     }}
                 />
