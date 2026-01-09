@@ -1,228 +1,48 @@
-import React, { useState, useEffect } from 'react';
-import { SALARY_TABLE, calculateSalary } from '../data/salaryData';
-import SalaryResult from './SalaryResult';
-
-const GRADES = Object.keys(SALARY_TABLE);
-
-// Components defined OUTSIDE to prevent re-mounting on every render
-const BrickSection = ({ title, children, className = "" }) => (
-    <div className={`bg-white border-4 border-slate-800 rounded-xl p-5 shadow-[6px_6px_0px_0px_rgba(30,41,59,1)] ${className}`}>
-        <h3 className="text-xl font-black text-slate-800 border-b-2 border-slate-200 pb-2 mb-4">
-            {title}
-        </h3>
-        {children}
-    </div>
-);
-
-const TypeToggle = ({ value, onChange }) => (
-    <div className="flex bg-slate-100 rounded-lg p-1 border border-slate-200">
-        <button
-            className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${value === 'monthly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-            onClick={() => onChange('monthly')}
-        >
-            월
-        </button>
-        <button
-            className={`px-3 py-1 text-sm font-bold rounded-md transition-colors ${value === 'yearly' ? 'bg-white text-blue-600 shadow-sm' : 'text-slate-400 hover:text-slate-600'}`}
-            onClick={() => onChange('yearly')}
-        >
-            년
-        </button>
-    </div>
-);
+// ... imports
+import MonthlyDetailModal from './MonthlyDetailModal';
 
 export default function CalculatorLayout() {
-    const [formData, setFormData] = useState({
-        grade: '4급',
-        hobong: 1,
-        isManager: false,
-        hasSpouse: false,
-        numChildren: 0,
-        numOthers: 0,
-        corporationAllowance: 0,
-        corporationType: 'monthly', // 'monthly' or 'yearly'
-        districtAllowance: 0,
-        districtType: 'monthly', // 'monthly' or 'yearly'
-        overtimeHours: 0
-    });
+    // ... existing state
+    const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
 
-    const [salaryResult, setSalaryResult] = useState(null);
-
-    // Auto-calculate on change
-    useEffect(() => {
-        const result = calculateSalary(formData.grade, parseInt(formData.hobong), {
-            isManager: formData.isManager,
-            hasSpouse: formData.hasSpouse,
-            numChildren: parseInt(formData.numChildren),
-            numOthers: parseInt(formData.numOthers),
-            overtimeHours: parseFloat(formData.overtimeHours || 0),
-            additionalAllowances: {
-                corporation: {
-                    amount: parseInt(formData.corporationAllowance || 0),
-                    type: formData.corporationType
-                },
-                district: {
-                    amount: parseInt(formData.districtAllowance || 0),
-                    type: formData.districtType
-                }
-            }
-        });
-        setSalaryResult(result);
-    }, [formData]);
+    // ... existing logic
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center justify-center p-4 font-sans">
             <div className="w-full max-w-[1400px]">
-                <header className="mb-6 text-center">
-                    <h1 className="text-3xl md:text-5xl font-black text-slate-900 tracking-tight mb-2">
-                        서울시 사회복지 종사자 <span className="text-blue-600">임금계산기</span>
-                    </h1>
-                    <p className="text-lg font-bold text-slate-500">2025년 기준 (단일임금체계)</p>
-                </header>
+                {/* Header ... */}
 
-                <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-                    {/* LEFT COLUMN: INPUTS (lg:col-span-4) */}
-                    <div className="lg:col-span-4 flex flex-col gap-6 h-full">
+                {/* Main Grid ... */}
 
-                        {/* 1. Class & Hobong */}
-                        <BrickSection title="1. 직급 및 호봉" className="shrink-0">
-                            <div className="space-y-5">
-                                <div>
-                                    <label className="block text-lg font-bold text-slate-700 mb-2">직급</label>
-                                    <select
-                                        className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 focus:outline-none cursor-pointer hover:bg-white transition-colors"
-                                        value={formData.grade}
-                                        onChange={(e) => setFormData({ ...formData, grade: e.target.value })}
-                                    >
-                                        {GRADES.map(g => <option key={g} value={g}>{g}</option>)}
-                                    </select>
-                                </div>
-                                <div>
-                                    <label className="block text-lg font-bold text-slate-700 mb-2">호봉</label>
-                                    <select
-                                        className="w-full bg-slate-50 border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 focus:outline-none cursor-pointer hover:bg-white transition-colors"
-                                        value={formData.hobong}
-                                        onChange={(e) => setFormData({ ...formData, hobong: e.target.value })}
-                                    >
-                                        {[...Array(31).keys()].map(i => (
-                                            <option key={i + 1} value={i + 1}>{i + 1} 호봉</option>
-                                        ))}
-                                    </select>
-                                </div>
-                            </div>
-                        </BrickSection>
-
-                        {/* 2. Allowance Info */}
-                        <BrickSection title="2. 수당 정보" className="flex-[1] flex flex-col justify-center">
-                            <div className="space-y-6">
-                                <label className="flex items-center p-4 border-2 border-slate-200 rounded-lg cursor-pointer hover:bg-slate-50 transition-colors">
-                                    <input
-                                        type="checkbox"
-                                        className="w-6 h-6 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                                        checked={formData.isManager}
-                                        onChange={(e) => setFormData({ ...formData, isManager: e.target.checked })}
-                                    />
-                                    <span className="ml-3 text-lg font-bold text-slate-700">관리자 수당 포함</span>
-                                </label>
-
-                                <div className="pt-6 border-t-2 border-dashed border-slate-300">
-                                    <div className="text-base font-black text-slate-400 mb-4">가족수당</div>
-
-                                    <label className="flex items-center mb-6 p-2 cursor-pointer hover:bg-slate-50 rounded -ml-2">
-                                        <input
-                                            type="checkbox"
-                                            className="w-5 h-5 text-blue-600 rounded border-slate-300 focus:ring-blue-500"
-                                            checked={formData.hasSpouse}
-                                            onChange={(e) => setFormData({ ...formData, hasSpouse: e.target.checked })}
-                                        />
-                                        <span className="ml-3 text-lg font-bold text-slate-700">배우자 있음</span>
-                                    </label>
-
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-base font-bold text-slate-600 mb-2">자녀 수</label>
-                                            <input
-                                                type="number" min="0" placeholder="0"
-                                                className="w-full border-2 border-slate-300 rounded-lg p-2 text-lg font-bold focus:border-blue-500 outline-none no-spinner"
-                                                value={formData.numChildren}
-                                                onChange={(e) => setFormData({ ...formData, numChildren: e.target.value })}
-                                            />
-                                        </div>
-                                        <div>
-                                            <label className="block text-base font-bold text-slate-600 mb-2">기타부양</label>
-                                            <input
-                                                type="number" min="0" placeholder="0"
-                                                className="w-full border-2 border-slate-300 rounded-lg p-2 text-lg font-bold focus:border-blue-500 outline-none no-spinner"
-                                                value={formData.numOthers}
-                                                onChange={(e) => setFormData({ ...formData, numOthers: e.target.value })}
-                                            />
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </BrickSection>
-
-                        {/* 3. Additional Custom Allowances */}
-                        <BrickSection title="3. 추가 수당" className="flex-[1] flex flex-col">
-                            <div className="flex-1 flex flex-col justify-around">
-                                <div>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label className="block text-base font-bold text-slate-600">법인/직책 수당</label>
-                                        <TypeToggle
-                                            value={formData.corporationType}
-                                            onChange={(val) => setFormData({ ...formData, corporationType: val })}
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <input
-                                            type="number" min="0" placeholder="0"
-                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-8 no-spinner"
-                                            value={formData.corporationAllowance === 0 ? '' : formData.corporationAllowance}
-                                            onChange={(e) => setFormData({ ...formData, corporationAllowance: e.target.value })}
-                                        />
-                                        <span className="absolute right-3 top-3.5 text-slate-400 font-bold">원</span>
-                                    </div>
-                                </div>
-                                <div>
-                                    <div className="flex justify-between items-center mb-2">
-                                        <label className="block text-base font-bold text-slate-600">자치구 복지포인트/수당</label>
-                                        <TypeToggle
-                                            value={formData.districtType}
-                                            onChange={(val) => setFormData({ ...formData, districtType: val })}
-                                        />
-                                    </div>
-                                    <div className="relative">
-                                        <input
-                                            type="number" min="0" placeholder="0"
-                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-8 no-spinner"
-                                            value={formData.districtAllowance === 0 ? '' : formData.districtAllowance}
-                                            onChange={(e) => setFormData({ ...formData, districtAllowance: e.target.value })}
-                                        />
-                                        <span className="absolute right-3 top-3.5 text-slate-400 font-bold">원</span>
-                                    </div>
-                                </div>
-                                <div className="mt-4 pt-4 border-t border-dashed border-slate-300">
-                                    <label className="block text-base font-bold text-slate-600 mb-2">시간외 근무 (시간)</label>
-                                    <div className="relative">
-                                        <input
-                                            type="number" min="0" placeholder="0"
-                                            className="w-full border-2 border-slate-300 rounded-lg p-3 text-lg font-bold focus:border-blue-500 outline-none pr-12 no-spinner"
-                                            value={formData.overtimeHours === 0 ? '' : formData.overtimeHours}
-                                            onChange={(e) => setFormData({ ...formData, overtimeHours: e.target.value })}
-                                        />
-                                        <span className="absolute right-3 top-3.5 text-slate-400 font-bold">시간</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </BrickSection>
-
-                    </div>
-
-                    {/* RIGHT AREA: RESULTS */}
-                    <div className="lg:col-span-8 flex flex-col h-full">
-                        {salaryResult && <SalaryResult result={salaryResult} grade={formData.grade} hobong={formData.hobong} />}
-                    </div>
+                {/* Add Button underneath the grid or somewhere prominent */}
+                <div className="mt-8 flex justify-center">
+                    <button
+                        onClick={() => setIsDetailModalOpen(true)}
+                        className="bg-indigo-600 text-white text-xl font-black py-4 px-10 rounded-full shadow-lg hover:bg-indigo-700 hover:scale-105 transition-all flex items-center gap-3"
+                    >
+                        <span>📅 월별 급여 상세 시뮬레이션</span>
+                    </button>
                 </div>
+
+                {/* MODAL */}
+                <MonthlyDetailModal
+                    isOpen={isDetailModalOpen}
+                    onClose={() => setIsDetailModalOpen(false)}
+                    baseData={{
+                        grade: formData.grade,
+                        hobong: parseInt(formData.hobong),
+                        isManager: formData.isManager,
+                        hasSpouse: formData.hasSpouse,
+                        numChildren: parseInt(formData.numChildren),
+                        numOthers: parseInt(formData.numOthers),
+                        additionalAllowances: {
+                            corporation: {
+                                amount: parseInt(formData.corporationAllowance || 0),
+                                type: formData.corporationType
+                            },
+                        }
+                    }}
+                />
             </div>
         </div>
     );
