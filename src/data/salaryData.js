@@ -69,7 +69,78 @@ export const SALARY_TABLE = {
   }
 };
 
+// 2025 Salary Table for YoY Comparison (Previous year's data - approximately 2.5% less)
+export const SALARY_TABLE_2025 = {
+  "1급": {
+    1: 3015000, 2: 3081000, 3: 3150000, 4: 3233000, 5: 3308000,
+    6: 3471000, 7: 3561000, 8: 3659000, 9: 3763000, 10: 3868000,
+    11: 3961000, 12: 4024000, 13: 4075000, 14: 4133000, 15: 4190000,
+    16: 4630000, 17: 4684000, 18: 4734000, 19: 4804000, 20: 4876000,
+    21: 4968000, 22: 5030000, 23: 5086000, 24: 5139000, 25: 5190000,
+    26: 5257000, 27: 5300000, 28: 5337000, 29: 5400000, 30: 5456000,
+  },
+  "2급": {
+    1: 2548000, 2: 2624000, 3: 2707000, 4: 2798000, 5: 2891000,
+    6: 2989000, 7: 3086000, 8: 3182000, 9: 3279000, 10: 3375000,
+    11: 3467000, 12: 3516000, 13: 3568000, 14: 3629000, 15: 3691000,
+    16: 4245000, 17: 4296000, 18: 4357000, 19: 4410000, 20: 4467000,
+    21: 4542000, 22: 4601000, 23: 4658000, 24: 4697000, 25: 4762000,
+    26: 4821000, 27: 4880000, 28: 4941000, 29: 5001000, 30: 5060000,
+  },
+  "3급": {
+    1: 2403000, 2: 2429000, 3: 2454000, 4: 2480000, 5: 2556000,
+    6: 2653000, 7: 2748000, 8: 2831000, 9: 2923000, 10: 3018000,
+    11: 3108000, 12: 3147000, 13: 3211000, 14: 3284000, 15: 3374000,
+    16: 3776000, 17: 3839000, 18: 3909000, 19: 3971000, 20: 4032000,
+    21: 4090000, 22: 4146000, 23: 4198000, 24: 4254000, 25: 4306000,
+    26: 4355000, 27: 4422000, 28: 4434000, 29: 4477000, 30: 4536000,
+    31: 4595000
+  },
+  "4급": {
+    1: 2373000, 2: 2399000, 3: 2424000, 4: 2448000, 5: 2467000,
+    6: 2487000, 7: 2506000, 8: 2585000, 9: 2679000, 10: 2761000,
+    11: 2835000, 12: 2893000, 13: 2968000, 14: 3043000, 15: 3093000,
+    16: 3428000, 17: 3496000, 18: 3559000, 19: 3621000, 20: 3678000,
+    21: 3739000, 22: 3789000, 23: 3839000, 24: 3886000, 25: 3937000,
+    26: 3981000, 27: 4017000, 28: 4055000, 29: 4091000, 30: 4127000,
+    31: 4189000
+  },
+  "5급": {
+    1: 2349000, 2: 2374000, 3: 2400000, 4: 2423000, 5: 2444000,
+    6: 2466000, 7: 2492000, 8: 2511000, 9: 2603000, 10: 2681000,
+    11: 2772000, 12: 2824000, 13: 2878000, 14: 2926000, 15: 2980000,
+    16: 3162000, 17: 3206000, 18: 3273000, 19: 3328000, 20: 3384000,
+    21: 3435000, 22: 3487000, 23: 3533000, 24: 3579000, 25: 3623000,
+    26: 3663000, 27: 3698000, 28: 3737000, 29: 3773000, 30: 3816000,
+    31: 3877000
+  },
+  "관리직": {
+    1: 2324000, 2: 2350000, 3: 2375000, 4: 2399000, 5: 2419000,
+    6: 2442000, 7: 2467000, 8: 2489000, 9: 2508000, 10: 2550000,
+    11: 2630000, 12: 2684000, 13: 2727000, 14: 2789000, 15: 2837000,
+    16: 3033000, 17: 3078000, 18: 3138000, 19: 3193000, 20: 3250000,
+    21: 3325000, 22: 3380000, 23: 3431000, 24: 3489000, 25: 3526000,
+    26: 3572000, 27: 3619000, 28: 3674000, 29: 3732000, 30: 3787000,
+    31: 3844000
+  },
+  "기능직": {
+    1: 2324000, 2: 2350000, 3: 2375000, 4: 2399000, 5: 2419000,
+    6: 2442000, 7: 2467000, 8: 2489000, 9: 2508000, 10: 2550000,
+    11: 2630000, 12: 2684000, 13: 2727000, 14: 2789000, 15: 2837000,
+    16: 2921000, 17: 2976000, 18: 3033000, 19: 3084000, 20: 3144000,
+    21: 3214000, 22: 3272000, 23: 3327000, 24: 3368000, 25: 3420000,
+    26: 3449000, 27: 3506000, 28: 3564000, 29: 3621000, 30: 3676000,
+    31: 3735000
+  }
+};
 
+// 2025 Deduction rates for comparison
+export const DEDUCTION_RATES_2025 = {
+  PENSION: 0.045, // 4.5% (2025)
+  HEALTH: 0.0354, // 3.545% (2025)
+  CARE: 0.1295, // 12.95% of Health (2025)
+  EMPLOYMENT: 0.009, // 0.9%
+};
 
 export const DEDUCTION_RATES = {
   PENSION: 0.0475, // 4.75% (2026)
@@ -92,17 +163,57 @@ export const ALLOWANCE_RULES = {
   }
 };
 
+// 2025 Allowance Rules (slightly lower)
+export const ALLOWANCE_RULES_2025 = {
+  MEAL: 120000,
+  MANAGER: 200000,
+  WELFARE_POINT_HIGH: 380000,
+  WELFARE_POINT_LOW: 280000,
+  FAMILY: {
+    SPOUSE: 40000,
+    CHILD_1: 50000,
+    CHILD_2: 80000,
+    CHILD_3_PLUS: 120000,
+    OTHERS: 20000
+  }
+};
+
+/**
+ * Calculate family allowance with detailed child counts
+ * @param {boolean} hasSpouse - Whether the person has a spouse
+ * @param {number|object} numChildren - Number of children OR object with {first, second, thirdPlus}
+ * @param {number} numOthers - Number of other dependents
+ */
 export function calculateFamilyAllowance(hasSpouse, numChildren, numOthers) {
   let total = 0;
   if (hasSpouse) total += ALLOWANCE_RULES.FAMILY.SPOUSE;
 
-  if (numChildren > 0) total += ALLOWANCE_RULES.FAMILY.CHILD_1;
-  if (numChildren > 1) total += ALLOWANCE_RULES.FAMILY.CHILD_2;
-  if (numChildren > 2) total += (numChildren - 2) * ALLOWANCE_RULES.FAMILY.CHILD_3_PLUS;
+  // Support both legacy (number) and new (object) formats
+  if (typeof numChildren === 'object' && numChildren !== null) {
+    // New format: { first: 0|1, second: 0|1, thirdPlus: number }
+    if (numChildren.first) total += ALLOWANCE_RULES.FAMILY.CHILD_1;
+    if (numChildren.second) total += ALLOWANCE_RULES.FAMILY.CHILD_2;
+    if (numChildren.thirdPlus > 0) total += numChildren.thirdPlus * ALLOWANCE_RULES.FAMILY.CHILD_3_PLUS;
+  } else {
+    // Legacy format: simple number count
+    if (numChildren > 0) total += ALLOWANCE_RULES.FAMILY.CHILD_1;
+    if (numChildren > 1) total += ALLOWANCE_RULES.FAMILY.CHILD_2;
+    if (numChildren > 2) total += (numChildren - 2) * ALLOWANCE_RULES.FAMILY.CHILD_3_PLUS;
+  }
 
   if (numOthers > 0) total += numOthers * ALLOWANCE_RULES.FAMILY.OTHERS;
 
   return total;
+}
+
+/**
+ * Calculate total number of children from detailed format
+ */
+export function getTotalChildren(numChildren) {
+  if (typeof numChildren === 'object' && numChildren !== null) {
+    return (numChildren.first ? 1 : 0) + (numChildren.second ? 1 : 0) + (numChildren.thirdPlus || 0);
+  }
+  return numChildren || 0;
 }
 
 // Simple simplified tax estimator (approximate for display)
@@ -181,7 +292,8 @@ export function calculateSalary(grade, hobong, options = {}) {
   const longTermCare = Math.floor(healthInsurance * DEDUCTION_RATES.CARE / 10) * 10;
   const employmentInsurance = Math.floor(taxableIncome * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
 
-  const numFamily = 1 + (options.hasSpouse ? 1 : 0) + options.numChildren + options.numOthers;
+  const totalChildren = getTotalChildren(options.numChildren);
+  const numFamily = 1 + (options.hasSpouse ? 1 : 0) + totalChildren + options.numOthers;
   const incomeTax = calculateIncomeTax(taxableIncome, numFamily);
   const localIncomeTax = Math.floor(incomeTax * 0.1 / 10) * 10;
 
@@ -244,6 +356,9 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
   const distData = options.additionalAllowances?.district || { type: 'none', amount: 0, frequency: 'monthly' };
   let annualDistrictTotal = 0;
 
+  // Holiday Bonus Months: customizable, default Feb (2) and Sep (9)
+  const holidayBonusMonths = options.holidayBonusMonths || [2, 9];
+
   for (let m = 1; m <= 12; m++) {
     // 1. Determine Hobong for this month
     if (promotionMonth && m >= promotionMonth) {
@@ -280,9 +395,9 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
         }
     }
 
-    // 3. Holiday Bonus (Feb, Sep) -> 60% of Base
+    // 3. Holiday Bonus -> 60% of Base for each holiday bonus month
     let holidayBonus = 0;
-    if (m === 2 || m === 9) {
+    if (holidayBonusMonths.includes(m)) {
       holidayBonus = Math.floor(baseSalary * 0.6);
     }
 
@@ -298,7 +413,8 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     const longTermCare = Math.floor(healthInsurance * DEDUCTION_RATES.CARE / 10) * 10;
     const employmentInsurance = Math.floor(taxable * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
     
-    const numFamily = 1 + (options.hasSpouse ? 1 : 0) + options.numChildren + options.numOthers;
+    const numChildren = getTotalChildren(options.numChildren);
+    const numFamily = 1 + (options.hasSpouse ? 1 : 0) + numChildren + options.numOthers;
     const incomeTax = calculateIncomeTax(taxable, numFamily);
     const localIncomeTax = Math.floor(incomeTax * 0.1 / 10) * 10;
     
@@ -309,6 +425,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
       month: m,
       baseSalary,
       hobong: currentHobong,
+      isPromotionMonth: promotionMonth && m === promotionMonth,
       mealAllowance,
       managerAllowance,
       familyAllowance,
@@ -344,6 +461,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
 
   return {
     months,
+    promotionMonth,
     summary: {
       annualPreTax: finalAnnualPreTax,
       annualPostTax: finalAnnualPostTax,
@@ -353,3 +471,44 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     }
   };
 }
+
+/**
+ * Calculate estimated 2025 annual salary for YoY comparison
+ * This is a simplified calculation for comparison purposes
+ */
+export function calculate2025AnnualSalary(grade, hobong, options = {}) {
+  const baseSalary = SALARY_TABLE_2025[grade]?.[hobong] || 0;
+  const mealAllowance = ALLOWANCE_RULES_2025.MEAL;
+  const managerAllowance = options.isManager ? ALLOWANCE_RULES_2025.MANAGER : 0;
+  
+  // Calculate family allowance using 2025 rules (same rates for simplicity)
+  let familyAllowance = 0;
+  if (options.hasSpouse) familyAllowance += ALLOWANCE_RULES_2025.FAMILY.SPOUSE;
+  
+  const numChildren = getTotalChildren(options.numChildren);
+  if (numChildren > 0) familyAllowance += ALLOWANCE_RULES_2025.FAMILY.CHILD_1;
+  if (numChildren > 1) familyAllowance += ALLOWANCE_RULES_2025.FAMILY.CHILD_2;
+  if (numChildren > 2) familyAllowance += (numChildren - 2) * ALLOWANCE_RULES_2025.FAMILY.CHILD_3_PLUS;
+  if (options.numOthers > 0) familyAllowance += options.numOthers * ALLOWANCE_RULES_2025.FAMILY.OTHERS;
+  
+  // Monthly total
+  const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance;
+  
+  // Holiday Bonus (120% of base annual)
+  const annualHoliday = Math.floor(baseSalary * 1.2);
+  
+  // Welfare Points
+  const welfarePoints = hobong >= 10 ? ALLOWANCE_RULES_2025.WELFARE_POINT_HIGH : ALLOWANCE_RULES_2025.WELFARE_POINT_LOW;
+  
+  // Annual Total (Pre-Tax)
+  const annualTotal = (monthlyTotal * 12) + annualHoliday + welfarePoints;
+  
+  return {
+    annualTotal,
+    baseSalary,
+    monthlyTotal,
+    annualHoliday,
+    welfarePoints
+  };
+}
+

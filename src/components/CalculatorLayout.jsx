@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { SALARY_TABLE, calculateSalary, generateAnnualReport } from '../data/salaryData';
+import { SALARY_TABLE, calculateSalary, generateAnnualReport, calculate2025AnnualSalary, getTotalChildren } from '../data/salaryData';
 import SalaryResult from './SalaryResult';
 import AnnualReportTable from './AnnualReportTable';
 import MonthlyDetailModal from './MonthlyDetailModal';
+import Tooltip, { InfoIcon } from './Tooltip';
 
 export default function CalculatorLayout() {
     const [formData, setFormData] = useState({
@@ -11,18 +12,32 @@ export default function CalculatorLayout() {
         promotionMonth: '', 
         isManager: false,
         hasSpouse: false,
-        numChildren: 0,
+        // New detailed children format
+        childFirst: false,
+        childSecond: false,
+        childThirdPlus: 0,
         numOthers: 0,
         corporationAllowance: 0,
         corporationType: 'monthly', 
         districtType: 'none',   // none | point | allowance
         districtAmount: 0, 
-        districtFrequency: 'monthly' // monthly | yearly (only for allowance)
+        districtFrequency: 'monthly', // monthly | yearly (only for allowance)
+        // Holiday Bonus Months setting
+        holidayBonusMonths: [2, 9] // Default: Feb & Sep
     });
 
     const [salaryResult, setSalaryResult] = useState(null);
     const [annualReport, setAnnualReport] = useState(null);
+    const [salary2025, setSalary2025] = useState(null);
     const [isDetailModalOpen, setIsDetailModalOpen] = useState(false);
+    const [showSettings, setShowSettings] = useState(false);
+
+    // Convert detailed children format to object for calculations
+    const getChildrenObject = () => ({
+        first: formData.childFirst ? 1 : 0,
+        second: formData.childSecond ? 1 : 0,
+        thirdPlus: parseInt(formData.childThirdPlus) || 0
+    });
 
     useEffect(() => {
         // Prepare District Data Object
@@ -32,11 +47,13 @@ export default function CalculatorLayout() {
             frequency: formData.districtFrequency
         };
 
+        const childrenData = getChildrenObject();
+
         // Calculate Monthly Estimate (Normal Month)
         const result = calculateSalary(formData.grade, parseInt(formData.hobong), {
             isManager: formData.isManager,
             hasSpouse: formData.hasSpouse,
-            numChildren: parseInt(formData.numChildren),
+            numChildren: childrenData,
             numOthers: parseInt(formData.numOthers),
             additionalAllowances: {
                 corporation: {
@@ -52,8 +69,9 @@ export default function CalculatorLayout() {
         const report = generateAnnualReport(formData.grade, parseInt(formData.hobong), parseInt(formData.promotionMonth) || null, {
             isManager: formData.isManager,
             hasSpouse: formData.hasSpouse,
-            numChildren: parseInt(formData.numChildren),
+            numChildren: childrenData,
             numOthers: parseInt(formData.numOthers),
+            holidayBonusMonths: formData.holidayBonusMonths,
             additionalAllowances: {
                 corporation: {
                     amount: parseInt(formData.corporationAllowance || 0),
@@ -64,6 +82,15 @@ export default function CalculatorLayout() {
         });
         setAnnualReport(report);
 
+        // Calculate 2025 comparison
+        const salary2025Data = calculate2025AnnualSalary(formData.grade, parseInt(formData.hobong), {
+            isManager: formData.isManager,
+            hasSpouse: formData.hasSpouse,
+            numChildren: childrenData,
+            numOthers: parseInt(formData.numOthers)
+        });
+        setSalary2025(salary2025Data);
+
     }, [formData]);
 
     const handleInputChange = (e) => {
@@ -73,6 +100,29 @@ export default function CalculatorLayout() {
             [name]: type === 'checkbox' ? checked : value
         }));
     };
+
+    const handleHolidayBonusChange = (month) => {
+        setFormData(prev => {
+            const currentMonths = [...prev.holidayBonusMonths];
+            if (currentMonths.includes(month)) {
+                // Remove month if already selected (but keep at least one)
+                if (currentMonths.length > 1) {
+                    return { ...prev, holidayBonusMonths: currentMonths.filter(m => m !== month) };
+                }
+                return prev;
+            } else {
+                // Add month (max 2 holidays per year is typical)
+                if (currentMonths.length < 2) {
+                    return { ...prev, holidayBonusMonths: [...currentMonths, month].sort((a, b) => a - b) };
+                } else {
+                    // Replace the second one
+                    return { ...prev, holidayBonusMonths: [currentMonths[0], month].sort((a, b) => a - b) };
+                }
+            }
+        });
+    };
+
+    const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
 
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4 font-sans">
@@ -175,29 +225,81 @@ export default function CalculatorLayout() {
                                             className="w-4 h-4 text-blue-600 rounded"
                                         />
                                         <span className="ml-2 text-sm font-bold text-slate-600">배우자 있음</span>
+                                        <Tooltip content="배우자가 있는 경우 월 40,000원의 가족수당이 지급됩니다.">
+                                            <InfoIcon className="ml-1" />
+                                        </Tooltip>
                                     </label>
                                     
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 mb-1">자녀 수</label>
-                                            <input
-                                                type="number" min="0"
-                                                name="numChildren"
-                                                value={formData.numChildren}
-                                                onChange={handleInputChange}
-                                                className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
-                                            />
+                                    {/* Detailed Children Selection */}
+                                    <div className="mt-3 p-3 bg-slate-50 rounded-lg">
+                                        <div className="flex items-center gap-2 mb-3">
+                                            <span className="text-xs font-bold text-slate-500">자녀 수당 상세</span>
+                                            <Tooltip content="첫째 자녀: 월 50,000원 / 둘째 자녀: 월 80,000원 / 셋째 이상: 1인당 월 120,000원">
+                                                <InfoIcon />
+                                            </Tooltip>
                                         </div>
-                                        <div>
-                                            <label className="block text-xs font-bold text-slate-500 mb-1">기타 부양</label>
-                                            <input
-                                                type="number" min="0"
-                                                name="numOthers"
-                                                value={formData.numOthers}
-                                                onChange={handleInputChange}
-                                                className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
-                                            />
+                                        
+                                        <div className="space-y-2">
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    name="childFirst"
+                                                    checked={formData.childFirst}
+                                                    onChange={handleInputChange}
+                                                    className="w-4 h-4 text-blue-600 rounded"
+                                                />
+                                                <span className="ml-2 text-sm font-medium text-slate-600">첫째 자녀 (₩50,000)</span>
+                                            </label>
+                                            
+                                            <label className="flex items-center">
+                                                <input
+                                                    type="checkbox"
+                                                    name="childSecond"
+                                                    checked={formData.childSecond}
+                                                    onChange={handleInputChange}
+                                                    className="w-4 h-4 text-blue-600 rounded"
+                                                    disabled={!formData.childFirst}
+                                                />
+                                                <span className={`ml-2 text-sm font-medium ${formData.childFirst ? 'text-slate-600' : 'text-slate-400'}`}>
+                                                    둘째 자녀 (₩80,000)
+                                                </span>
+                                            </label>
+                                            
+                                            <div className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-slate-600">셋째 이상</span>
+                                                <select
+                                                    name="childThirdPlus"
+                                                    value={formData.childThirdPlus}
+                                                    onChange={handleInputChange}
+                                                    disabled={!formData.childSecond}
+                                                    className={`p-1.5 border border-slate-300 rounded font-bold text-sm w-20 ${!formData.childSecond ? 'bg-slate-100 text-slate-400' : ''}`}
+                                                >
+                                                    <option value="0">0명</option>
+                                                    <option value="1">1명</option>
+                                                    <option value="2">2명</option>
+                                                    <option value="3">3명</option>
+                                                    <option value="4">4명</option>
+                                                    <option value="5">5명</option>
+                                                </select>
+                                                <span className="text-xs text-slate-400">(1인당 ₩120,000)</span>
+                                            </div>
                                         </div>
+                                    </div>
+                                    
+                                    <div>
+                                        <label className="block text-xs font-bold text-slate-500 mb-1">
+                                            기타 부양가족
+                                            <Tooltip content="부모님, 조부모님 등 기타 부양가족 1인당 월 20,000원">
+                                                <InfoIcon className="ml-1 inline-block" />
+                                            </Tooltip>
+                                        </label>
+                                        <input
+                                            type="number" min="0"
+                                            name="numOthers"
+                                            value={formData.numOthers}
+                                            onChange={handleInputChange}
+                                            className="w-full p-2 border border-slate-300 rounded font-bold text-sm"
+                                        />
                                     </div>
                                 </div>
 
@@ -315,6 +417,56 @@ export default function CalculatorLayout() {
                                         )}
                                     </div>
                                 </div>
+
+                                {/* Settings Toggle */}
+                                <div className="mt-4 pt-4 border-t border-slate-200">
+                                    <button
+                                        onClick={() => setShowSettings(!showSettings)}
+                                        className="flex items-center gap-2 text-sm font-bold text-slate-600 hover:text-slate-800 transition-colors"
+                                    >
+                                        <span>⚙️</span>
+                                        <span>고급 설정</span>
+                                        <span className={`transition-transform ${showSettings ? 'rotate-180' : ''}`}>▼</span>
+                                    </button>
+                                    
+                                    {showSettings && (
+                                        <div className="mt-4 p-4 bg-slate-50 rounded-lg border border-slate-200 animate-fadeIn">
+                                            <div className="space-y-4">
+                                                {/* Holiday Bonus Months Setting */}
+                                                <div>
+                                                    <label className="block text-sm font-bold text-slate-600 mb-2">
+                                                        명절휴가비 지급월
+                                                        <Tooltip content="명절휴가비(기본급의 60%)가 지급되는 월을 선택하세요. 기본값은 설날(2월)과 추석(9월)입니다.">
+                                                            <InfoIcon className="ml-1 inline-block" />
+                                                        </Tooltip>
+                                                    </label>
+                                                    <div className="grid grid-cols-6 gap-1">
+                                                        {monthNames.map((name, idx) => {
+                                                            const month = idx + 1;
+                                                            const isSelected = formData.holidayBonusMonths.includes(month);
+                                                            return (
+                                                                <button
+                                                                    key={month}
+                                                                    onClick={() => handleHolidayBonusChange(month)}
+                                                                    className={`p-2 text-xs font-bold rounded transition-all ${
+                                                                        isSelected 
+                                                                            ? 'bg-blue-600 text-white shadow-sm' 
+                                                                            : 'bg-white text-slate-600 border border-slate-200 hover:border-blue-400'
+                                                                    }`}
+                                                                >
+                                                                    {name}
+                                                                </button>
+                                                            );
+                                                        })}
+                                                    </div>
+                                                    <p className="text-xs text-slate-500 mt-2">
+                                                        * 선택된 월: {formData.holidayBonusMonths.map(m => monthNames[m-1]).join(', ')}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -327,7 +479,8 @@ export default function CalculatorLayout() {
                                <SalaryResult 
                                     result={salaryResult} 
                                     grade={formData.grade} 
-                                    hobong={formData.promotionMonth && (new Date().getMonth() + 1) >= parseInt(formData.promotionMonth) ? parseInt(formData.hobong) + 1 : formData.hobong} 
+                                    hobong={formData.promotionMonth && (new Date().getMonth() + 1) >= parseInt(formData.promotionMonth) ? parseInt(formData.hobong) + 1 : formData.hobong}
+                                    salary2025={salary2025}
                                />
                            )}
                         </div>
@@ -345,7 +498,11 @@ export default function CalculatorLayout() {
                 </div>
 
                 {/* ANNUAL REPORT TABLE */}
-                <AnnualReportTable annualReport={annualReport} />
+                <AnnualReportTable 
+                    annualReport={annualReport} 
+                    promotionMonth={parseInt(formData.promotionMonth) || null}
+                    holidayBonusMonths={formData.holidayBonusMonths}
+                />
 
                 {/* MODAL */}
                 <MonthlyDetailModal
@@ -356,7 +513,7 @@ export default function CalculatorLayout() {
                         hobong: parseInt(formData.hobong),
                         isManager: formData.isManager,
                         hasSpouse: formData.hasSpouse,
-                        numChildren: parseInt(formData.numChildren),
+                        numChildren: getChildrenObject(),
                         numOthers: parseInt(formData.numOthers),
                         additionalAllowances: {
                             corporation: {

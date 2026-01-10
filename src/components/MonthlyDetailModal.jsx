@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { ALLOWANCE_RULES, DEDUCTION_RATES, calculateIncomeTax, calculateFamilyAllowance, SALARY_TABLE } from '../data/salaryData';
+import { ALLOWANCE_RULES, DEDUCTION_RATES, calculateIncomeTax, calculateFamilyAllowance, SALARY_TABLE, getTotalChildren } from '../data/salaryData';
+import Tooltip, { InfoIcon } from './Tooltip';
 
 export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
     if (!isOpen) return null;
@@ -64,7 +65,8 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
         const longTermCare = Math.floor(healthInsurance * DEDUCTION_RATES.CARE / 10) * 10;
         const employmentInsurance = Math.floor(taxableIncome * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
 
-        const numFamily = 1 + (baseData.hasSpouse ? 1 : 0) + baseData.numChildren + baseData.numOthers;
+        const numChildren = getTotalChildren(baseData.numChildren);
+        const numFamily = 1 + (baseData.hasSpouse ? 1 : 0) + numChildren + baseData.numOthers;
         const incomeTax = calculateIncomeTax(taxableIncome, numFamily);
         const localIncomeTax = Math.floor(incomeTax * 0.1 / 10) * 10;
 
@@ -80,6 +82,8 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
             holidayBonus,
             welfarePoints,
             totalPay,
+            ordinaryWage,
+            hourlyRate,
             deductions: {
                 total: totalDeductions,
                 nationalPension,
@@ -107,7 +111,12 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                     {/* INPUTS */}
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
                         <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
-                            <label className="block text-sm font-bold text-slate-600 mb-2">시간외 근무 (시간)</label>
+                            <label className="block text-sm font-bold text-slate-600 mb-2 flex items-center gap-1">
+                                시간외 근무 (시간)
+                                <Tooltip content="통상시급 × 1.5배로 계산됩니다.">
+                                    <InfoIcon />
+                                </Tooltip>
+                            </label>
                             <div className="relative flex items-center">
                                     <input
                                         type="number"
@@ -125,6 +134,11 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                                     />
                                     <span className="ml-1 text-slate-600">시간</span>
                             </div>
+                            {detailResult && monthDetails.overtimeHours > 0 && (
+                                <p className="text-xs text-blue-600 mt-2">
+                                    시급: {formatMoney(Math.floor(detailResult.hourlyRate))} × 1.5
+                                </p>
+                            )}
                         </div>
 
                         <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-center">
@@ -161,14 +175,27 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                                 <table className="w-full text-sm">
                                     <tbody className="divide-y divide-slate-100">
                                         <tr className="flex justify-between py-2"><td className="text-slate-600">기본급</td><td className="font-bold">{formatMoney(detailResult.baseSalary)}</td></tr>
-                                        <tr className="flex justify-between py-2"><td className="text-slate-600">정액급식비</td><td className="font-bold">{formatMoney(detailResult.mealAllowance)}</td></tr>
+                                        <tr className="flex justify-between py-2">
+                                            <td className="text-slate-600 flex items-center gap-1">
+                                                정액급식비
+                                                <Tooltip content="비과세 항목">
+                                                    <InfoIcon />
+                                                </Tooltip>
+                                            </td>
+                                            <td className="font-bold">{formatMoney(detailResult.mealAllowance)}</td>
+                                        </tr>
                                         {detailResult.managerAllowance > 0 && <tr className="flex justify-between py-2"><td className="text-slate-600">관리자수당</td><td className="font-bold">{formatMoney(detailResult.managerAllowance)}</td></tr>}
                                         {detailResult.familyAllowance > 0 && <tr className="flex justify-between py-2"><td className="text-slate-600">가족수당</td><td className="font-bold">{formatMoney(detailResult.familyAllowance)}</td></tr>}
                                         {detailResult.monthlyCorporation > 0 && <tr className="flex justify-between py-2"><td className="text-slate-600">법인/직책수당</td><td className="font-bold">{formatMoney(detailResult.monthlyCorporation)}</td></tr>}
 
                                         {/* Variables */}
                                         <tr className={`flex justify-between py-2 ${detailResult.overtimePay > 0 ? 'bg-blue-50 -mx-2 px-2 rounded' : ''}`}>
-                                            <td className="text-slate-700 font-bold">시간외 근무수당</td>
+                                            <td className="text-slate-700 font-bold flex items-center gap-1">
+                                                시간외 근무수당
+                                                {detailResult.overtimePay > 0 && (
+                                                    <span className="text-xs text-blue-600">({monthDetails.overtimeHours}시간)</span>
+                                                )}
+                                            </td>
                                             <td className="font-bold text-blue-600">{formatMoney(detailResult.overtimePay)}</td>
                                         </tr>
                                         <tr className={`flex justify-between py-2 ${detailResult.holidayBonus > 0 ? 'bg-blue-50 -mx-2 px-2 rounded' : ''}`}>
@@ -194,11 +221,43 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                                 <h4 className="text-lg font-black text-red-900 border-b-2 border-red-100 pb-2 mb-3">공제 내역</h4>
                                 <table className="w-full text-sm">
                                     <tbody className="divide-y divide-red-50">
-                                        <tr className="flex justify-between py-2"><td className="text-slate-600">국민연금</td><td className="font-bold text-red-700">{formatMoney(detailResult.deductions.nationalPension)}</td></tr>
-                                        <tr className="flex justify-between py-2"><td className="text-slate-600">건강보험</td><td className="font-bold text-red-700">{formatMoney(detailResult.deductions.healthInsurance)}</td></tr>
-                                        <tr className="flex justify-between py-2"><td className="text-slate-600">장기요양</td><td className="font-bold text-red-700">{formatMoney(detailResult.deductions.longTermCare)}</td></tr>
+                                        <tr className="flex justify-between py-2">
+                                            <td className="text-slate-600 flex items-center gap-1">
+                                                국민연금
+                                                <Tooltip content="소득의 4.75% (2026년 기준)">
+                                                    <InfoIcon />
+                                                </Tooltip>
+                                            </td>
+                                            <td className="font-bold text-red-700">{formatMoney(detailResult.deductions.nationalPension)}</td>
+                                        </tr>
+                                        <tr className="flex justify-between py-2">
+                                            <td className="text-slate-600 flex items-center gap-1">
+                                                건강보험
+                                                <Tooltip content="소득의 3.595% (2026년 기준)">
+                                                    <InfoIcon />
+                                                </Tooltip>
+                                            </td>
+                                            <td className="font-bold text-red-700">{formatMoney(detailResult.deductions.healthInsurance)}</td>
+                                        </tr>
+                                        <tr className="flex justify-between py-2">
+                                            <td className="text-slate-600 flex items-center gap-1">
+                                                장기요양
+                                                <Tooltip content="건강보험료의 13.14%">
+                                                    <InfoIcon />
+                                                </Tooltip>
+                                            </td>
+                                            <td className="font-bold text-red-700">{formatMoney(detailResult.deductions.longTermCare)}</td>
+                                        </tr>
                                         <tr className="flex justify-between py-2"><td className="text-slate-600">고용보험</td><td className="font-bold text-red-700">{formatMoney(detailResult.deductions.employmentInsurance)}</td></tr>
-                                        <tr className="flex justify-between py-2"><td className="text-slate-600">소득세</td><td className="font-bold text-red-700">{formatMoney(detailResult.deductions.incomeTax)}</td></tr>
+                                        <tr className="flex justify-between py-2">
+                                            <td className="text-slate-600 flex items-center gap-1">
+                                                소득세
+                                                <Tooltip content="간이세액표 기준으로 계산됩니다.">
+                                                    <InfoIcon />
+                                                </Tooltip>
+                                            </td>
+                                            <td className="font-bold text-red-700">{formatMoney(detailResult.deductions.incomeTax)}</td>
+                                        </tr>
                                         <tr className="flex justify-between py-2"><td className="text-slate-600">지방소득세</td><td className="font-bold text-red-700">{formatMoney(detailResult.deductions.localIncomeTax)}</td></tr>
                                     </tbody>
                                     <tfoot className="border-t-2 border-red-200 mt-2">
