@@ -141,12 +141,12 @@ export default function SalaryResult({ result, grade, hobong, salary2025 }) {
             </div>
 
             {/* MIDDLE ROW: Net Pay (Fixed height) */}
-            <div className="bg-blue-50 border-4 border-blue-600 rounded-xl p-6 shadow-[6px_6px_0px_0px_rgba(37,99,235,0.3)] flex-none flex items-center justify-between">
-                <div className="flex flex-col">
-                    <span className="text-2xl font-black text-blue-900">실 수령액 (월)</span>
+            <div className="bg-blue-50 border-4 border-blue-600 rounded-xl p-4 md:p-6 shadow-[6px_6px_0px_0px_rgba(37,99,235,0.3)] flex-none flex flex-col md:flex-row items-center justify-between gap-2">
+                <div className="flex flex-col text-center md:text-left">
+                    <span className="text-lg md:text-2xl font-black text-blue-900">실 수령액 (월)</span>
                     <span className="text-xs text-blue-800 opacity-70 mt-1">* 비과세 식대 및 부양가족 공제 적용</span>
                 </div>
-                <span className="text-5xl font-black text-blue-600 tracking-tight">{formatMoney(result.netPay)}</span>
+                <span className="text-3xl md:text-5xl font-black text-blue-600 tracking-tight break-all md:break-normal">{formatMoney(result.netPay)}</span>
             </div>
 
             {/* BOTTOM ROW: Annual (Takes less space: flex-[1]) */}
