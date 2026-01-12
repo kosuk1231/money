@@ -592,6 +592,8 @@ export default function CalculatorLayout() {
                     baseData={{
                         grade: formData.grade,
                         hobong: parseInt(formData.hobong),
+                        promotionMonth: parseInt(formData.promotionMonth) || null,
+                        holidayBonusMonths: formData.holidayBonusMonths,
                         isManager: formData.isManager,
                         hasSpouse: formData.hasSpouse,
                         numChildren: getChildrenObject(),
