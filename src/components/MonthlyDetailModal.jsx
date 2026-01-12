@@ -9,7 +9,12 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
         overtimeHours: 0,
         holidayWorkHours: 0,
         includeHolidayBonus: false,
-        includeWelfarePoints: false
+        includeWelfarePoints: false,
+        // 선택적 공제 항목
+        includeMealDeduction: false,
+        mealDeductionAmount: 0,
+        includeMutualAid: false,
+        mutualAidAmount: 0
     });
 
     const [detailResult, setDetailResult] = useState(null);
@@ -70,7 +75,11 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
         const incomeTax = calculateIncomeTax(taxableIncome, numFamily);
         const localIncomeTax = Math.floor(incomeTax * 0.1 / 10) * 10;
 
-        const totalDeductions = nationalPension + healthInsurance + longTermCare + employmentInsurance + incomeTax + localIncomeTax;
+        // 선택적 공제 항목
+        const mealDeduction = monthDetails.includeMealDeduction ? (parseInt(monthDetails.mealDeductionAmount) || 0) : 0;
+        const mutualAid = monthDetails.includeMutualAid ? (parseInt(monthDetails.mutualAidAmount) || 0) : 0;
+
+        const totalDeductions = nationalPension + healthInsurance + longTermCare + employmentInsurance + incomeTax + localIncomeTax + mealDeduction + mutualAid;
 
         setDetailResult({
             baseSalary,
@@ -91,7 +100,9 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                 longTermCare,
                 employmentInsurance,
                 incomeTax,
-                localIncomeTax
+                localIncomeTax,
+                mealDeduction,
+                mutualAid
             },
             netPay: totalPay - totalDeductions
         });
@@ -163,6 +174,79 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                                 />
                                 <span className="ml-3 font-bold text-slate-700">복지포인트 지급</span>
                             </label>
+                        </div>
+                    </div>
+
+                    {/* 선택적 공제 항목 */}
+                    <div className="mb-6 p-4 bg-red-50 rounded-lg border border-red-200">
+                        <h4 className="text-sm font-black text-red-800 mb-3 flex items-center gap-1">
+                            💸 선택적 공제 항목
+                            <Tooltip content="필요한 경우에만 활성화하고 금액을 입력하세요.">
+                                <InfoIcon />
+                            </Tooltip>
+                        </h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            {/* 식대 공제 */}
+                            <div className="bg-white p-3 rounded-lg border border-red-100">
+                                <label className="flex items-center cursor-pointer mb-2">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
+                                        checked={monthDetails.includeMealDeduction}
+                                        onChange={(e) => setMonthDetails({ ...monthDetails, includeMealDeduction: e.target.checked })}
+                                    />
+                                    <span className="ml-2 font-bold text-slate-700 text-sm">식대 공제</span>
+                                </label>
+                                {monthDetails.includeMealDeduction && (
+                                    <div className="mt-2 animate-fadeIn">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={monthDetails.mealDeductionAmount || ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setMonthDetails(prev => ({
+                                                    ...prev,
+                                                    mealDeductionAmount: val === '' ? 0 : parseInt(val)
+                                                }));
+                                            }}
+                                            placeholder="금액 입력"
+                                            className="w-full p-2 border border-red-200 rounded font-bold text-right focus:border-red-500 outline-none placeholder:text-slate-300"
+                                        />
+                                    </div>
+                                )}
+                            </div>
+
+                            {/* 상조회비 */}
+                            <div className="bg-white p-3 rounded-lg border border-red-100">
+                                <label className="flex items-center cursor-pointer mb-2">
+                                    <input
+                                        type="checkbox"
+                                        className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
+                                        checked={monthDetails.includeMutualAid}
+                                        onChange={(e) => setMonthDetails({ ...monthDetails, includeMutualAid: e.target.checked })}
+                                    />
+                                    <span className="ml-2 font-bold text-slate-700 text-sm">상조회비</span>
+                                </label>
+                                {monthDetails.includeMutualAid && (
+                                    <div className="mt-2 animate-fadeIn">
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={monthDetails.mutualAidAmount || ''}
+                                            onChange={(e) => {
+                                                const val = e.target.value;
+                                                setMonthDetails(prev => ({
+                                                    ...prev,
+                                                    mutualAidAmount: val === '' ? 0 : parseInt(val)
+                                                }));
+                                            }}
+                                            placeholder="금액 입력"
+                                            className="w-full p-2 border border-red-200 rounded font-bold text-right focus:border-red-500 outline-none placeholder:text-slate-300"
+                                        />
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
 
@@ -259,6 +343,20 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                                             <td className="font-bold text-red-700">{formatMoney(detailResult.deductions.incomeTax)}</td>
                                         </tr>
                                         <tr className="flex justify-between py-2"><td className="text-slate-600">지방소득세</td><td className="font-bold text-red-700">{formatMoney(detailResult.deductions.localIncomeTax)}</td></tr>
+                                        
+                                        {/* 선택적 공제 항목 표시 */}
+                                        {detailResult.deductions.mealDeduction > 0 && (
+                                            <tr className="flex justify-between py-2 bg-amber-50 -mx-2 px-2 rounded">
+                                                <td className="text-amber-700 font-bold">식대 공제</td>
+                                                <td className="font-bold text-red-700">{formatMoney(detailResult.deductions.mealDeduction)}</td>
+                                            </tr>
+                                        )}
+                                        {detailResult.deductions.mutualAid > 0 && (
+                                            <tr className="flex justify-between py-2 bg-amber-50 -mx-2 px-2 rounded">
+                                                <td className="text-amber-700 font-bold">상조회비</td>
+                                                <td className="font-bold text-red-700">{formatMoney(detailResult.deductions.mutualAid)}</td>
+                                            </tr>
+                                        )}
                                     </tbody>
                                     <tfoot className="border-t-2 border-red-200 mt-2">
                                         <tr className="flex justify-between py-3">
