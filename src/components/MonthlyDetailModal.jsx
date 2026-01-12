@@ -6,17 +6,21 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
     if (!isOpen) return null;
 
     const [monthDetails, setMonthDetails] = useState({
+        selectedMonth: 1, // 시뮬레이션할 월 (1~12)
         overtimeHours: 0,
         nightWorkHours: 0, // 야간근로 시간 (주40시간 내, 0.5배 가산)
         holidayWorkHours: 0,
-        includeHolidayBonus: false,
-        includeWelfarePoints: false,
         // 선택적 공제 항목
         includeMealDeduction: false,
         mealDeductionAmount: 0,
         includeMutualAid: false,
         mutualAidAmount: 0
     });
+
+    // 명절휴가비 지급월 (baseData에서 가져오거나 기본값 사용)
+    const holidayBonusMonths = baseData.holidayBonusMonths || [2, 9];
+    // 복지포인트 지급월 (6월, 12월)
+    const welfarePointsMonths = [6, 12];
 
     const [detailResult, setDetailResult] = useState(null);
 
@@ -26,8 +30,17 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
     }, [monthDetails, baseData]);
 
     const calculateDetailed = () => {
-        // 1. Base Data
-        const baseSalary = SALARY_TABLE[baseData.grade]?.[baseData.hobong] || 0;
+        const selectedMonth = monthDetails.selectedMonth;
+        const promotionMonth = baseData.promotionMonth;
+        
+        // 1. 승급월에 따른 호봉 결정
+        let currentHobong = baseData.hobong;
+        if (promotionMonth && selectedMonth >= promotionMonth) {
+            currentHobong = Math.min(baseData.hobong + 1, 31);
+        }
+        
+        // 2. Base Data
+        const baseSalary = SALARY_TABLE[baseData.grade]?.[currentHobong] || 0;
         const mealAllowance = ALLOWANCE_RULES.MEAL;
         const managerAllowance = baseData.isManager ? ALLOWANCE_RULES.MANAGER : 0;
         const familyAllowance = calculateFamilyAllowance(baseData.hasSpouse, baseData.numChildren, baseData.numOthers);
@@ -36,29 +49,21 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
         const corpData = baseData.additionalAllowances?.corporation || { amount: 0, type: 'monthly' };
         let monthlyCorporation = corpData.type === 'yearly' ? Math.floor(corpData.amount / 12) : corpData.amount;
 
-        // 2. Overtime & Variable
-        // Ordinary Wage for Overtime = Base + Manager + Meal + (Fixed Corp/Job allowance usually included)
-        // We will include Monthly Corporation Allowance in Ordinary Wage.
+        // 3. Overtime & Variable
         const ordinaryWage = baseSalary + managerAllowance + mealAllowance + monthlyCorporation;
         const hourlyRate = ordinaryWage / 209;
 
         const overtimePay = Math.floor(hourlyRate * 1.5 * monthDetails.overtimeHours);
-
-        // 야간근로수당: 주40시간 내 야간근로에 대한 0.5배 가산
-        // 야간근로는 기본급에 이미 포함되어 있으므로, 추가로 0.5배만 지급
         const nightWorkPay = Math.floor(hourlyRate * 0.5 * monthDetails.nightWorkHours);
 
-        // Holiday Bonus (60% of Base * 2 times a year -> 120% total, so 60% per time)
-        // Actually typically "120% of Base Salary" is annual, so 60% per holiday (Seol/Chuseok)? 
-        // Logic in salaryData was "annualHoliday = base * 1.2". So one time is 0.6.
-        const holidayBonus = monthDetails.includeHolidayBonus ? Math.floor(baseSalary * 0.6) : 0;
+        // 4. 명절휴가비 - 지급월에 해당하면 자동 포함
+        const isHolidayBonusMonth = holidayBonusMonths.includes(selectedMonth);
+        const holidayBonus = isHolidayBonusMonth ? Math.floor(baseSalary * 0.6) : 0;
 
-        // Welfare Points (Annual / 2 or 4?) 
-        // Usually paid quarterly or bi-annually. Let's assume full annual amount if checked, or maybe half?
-        // User asked for "Welfare point payment month", let's assume it adds the full annual points for that month 
-        // OR usually it's points used. Let's add the FULL annual amount defined in rules if checked for now.
-        const welfarePoints = monthDetails.includeWelfarePoints ?
-            (baseData.hobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW) : 0;
+        // 5. 복지포인트 - 6월/12월에만 지급 (연간 총액의 절반씩)
+        const isWelfarePointsMonth = welfarePointsMonths.includes(selectedMonth);
+        const annualWelfarePoints = currentHobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW;
+        const welfarePoints = isWelfarePointsMonth ? Math.floor(annualWelfarePoints / 2) : 0;
 
         // 3. Totals
         const totalTaxable = baseSalary + managerAllowance + familyAllowance + monthlyCorporation + overtimePay + nightWorkPay + holidayBonus + welfarePoints; // Meal is non-taxable
@@ -87,6 +92,9 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
         const totalDeductions = nationalPension + healthInsurance + longTermCare + employmentInsurance + incomeTax + localIncomeTax + mealDeduction + mutualAid;
 
         setDetailResult({
+            selectedMonth,
+            currentHobong,
+            isPromoted: promotionMonth && selectedMonth >= promotionMonth,
             baseSalary,
             mealAllowance,
             managerAllowance,
@@ -95,7 +103,9 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
             overtimePay,
             nightWorkPay,
             holidayBonus,
+            isHolidayBonusMonth,
             welfarePoints,
+            isWelfarePointsMonth,
             totalPay,
             ordinaryWage,
             hourlyRate,
@@ -125,8 +135,49 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                 </div>
 
                 <div className="p-6 overflow-y-auto">
+                    {/* 월 선택 */}
+                    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg border border-blue-200">
+                        <div className="flex flex-wrap items-center gap-4">
+                            <div className="flex items-center gap-2">
+                                <label className="text-sm font-bold text-blue-800">시뮬레이션 월:</label>
+                                <select
+                                    value={monthDetails.selectedMonth}
+                                    onChange={(e) => setMonthDetails({...monthDetails, selectedMonth: parseInt(e.target.value)})}
+                                    className="p-2 border border-blue-300 rounded-lg font-bold text-blue-900 bg-white focus:border-blue-500 outline-none min-w-[100px]"
+                                >
+                                    {[...Array(12)].map((_, i) => (
+                                        <option key={i+1} value={i+1}>{i+1}월</option>
+                                    ))}
+                                </select>
+                            </div>
+                            {/* 현재 월 상태 표시 */}
+                            {detailResult && (
+                                <div className="flex flex-wrap gap-2 text-xs">
+                                    {detailResult.isPromoted && (
+                                        <span className="px-2 py-1 bg-yellow-200 text-yellow-800 rounded-full font-bold">
+                                            ⬆ 승급 적용 ({detailResult.currentHobong}호봉)
+                                        </span>
+                                    )}
+                                    {detailResult.isHolidayBonusMonth && (
+                                        <span className="px-2 py-1 bg-green-200 text-green-800 rounded-full font-bold">
+                                            🎁 명절휴가비 지급월
+                                        </span>
+                                    )}
+                                    {detailResult.isWelfarePointsMonth && (
+                                        <span className="px-2 py-1 bg-purple-200 text-purple-800 rounded-full font-bold">
+                                            💎 복지포인트 지급월
+                                        </span>
+                                    )}
+                                </div>
+                            )}
+                        </div>
+                        <p className="text-xs text-blue-600 mt-2">
+                            💡 명절휴가비: {holidayBonusMonths.map(m => m + '월').join(', ')} | 복지포인트: 6월, 12월 (연간 {detailResult ? formatMoney(detailResult.currentHobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW) : '...'} ÷ 2)
+                        </p>
+                    </div>
+
                     {/* INPUTS */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
                         <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
                             <label className="block text-sm font-bold text-slate-600 mb-2 flex items-center gap-1">
                                 시간외 근무 (시간)
@@ -188,31 +239,8 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                                 </p>
                             )}
                         </div>
-
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-center">
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                                    checked={monthDetails.includeHolidayBonus}
-                                    onChange={(e) => setMonthDetails({ ...monthDetails, includeHolidayBonus: e.target.checked })}
-                                />
-                                <span className="ml-3 font-bold text-slate-700">명절 휴가비 지급</span>
-                            </label>
-                        </div>
-
-                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200 flex items-center">
-                            <label className="flex items-center cursor-pointer">
-                                <input
-                                    type="checkbox"
-                                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500"
-                                    checked={monthDetails.includeWelfarePoints}
-                                    onChange={(e) => setMonthDetails({ ...monthDetails, includeWelfarePoints: e.target.checked })}
-                                />
-                                <span className="ml-3 font-bold text-slate-700">복지포인트 지급</span>
-                            </label>
-                        </div>
                     </div>
+
 
                     {/* 선택적 공제 항목 */}
                     <div className="mb-6 p-4 bg-red-50 rounded-lg border border-red-200">
