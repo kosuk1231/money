@@ -354,6 +354,10 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
   const distData = options.additionalAllowances?.district || { type: 'none', amount: 0, frequency: 'monthly' };
   let annualDistrictTotal = 0;
 
+  // Seoul City Welfare Points - paid in June and December
+  const welfarePoints = startHobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW;
+  const welfarePointsPerPayment = Math.floor(welfarePoints / 2);
+
   // Holiday Bonus Months: customizable, default Feb (2) and Sep (9)
   const holidayBonusMonths = options.holidayBonusMonths || [2, 9];
 
@@ -399,10 +403,17 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
       holidayBonus = Math.floor(baseSalary * 0.6);
     }
 
-    const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrict + holidayBonus;
+    // 4. Seoul City Welfare Points - paid in June and December
+    let welfarePointsPayment = 0;
+    if (m === 6 || m === 12) {
+      welfarePointsPayment = welfarePointsPerPayment;
+    }
 
-    // 5. Deductions
-    const nonTaxable = mealAllowance; 
+    const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrict + holidayBonus + welfarePointsPayment;
+
+    // 5. Deductions (Welfare points are non-taxable, including district welfare points)
+    const districtWelfareNonTaxable = distData.type === 'point' ? monthlyDistrict : 0;
+    const nonTaxable = mealAllowance + welfarePointsPayment + districtWelfareNonTaxable; 
     const taxable = Math.max(0, monthlyTotal - nonTaxable);
 
     const pensionIncome = Math.min(taxable, 6170000);
@@ -430,6 +441,7 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
       corporationAllowance: monthlyCorporation,
       districtAllowance: monthlyDistrict, 
       holidayBonus,
+      welfarePointsPayment,
       monthlyTotal,
       taxable,
       deductions: {
@@ -450,12 +462,9 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     annualDistrictTotal += monthlyDistrict;
   }
 
-  // Add Welfare Points to Annual Total (Post-calculation)
-  // Let's use startHobong for status.
-  const welfarePoints = startHobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW;
-  
-  const finalAnnualPreTax = annualTotalPreTax + welfarePoints;
-  const finalAnnualPostTax = annualTotalPostTax + welfarePoints; // Assuming welfare points are tax-free or just added blindly as per previous logic
+  // Welfare points are already included in monthly totals
+  const finalAnnualPreTax = annualTotalPreTax;
+  const finalAnnualPostTax = annualTotalPostTax;
 
   return {
     months,

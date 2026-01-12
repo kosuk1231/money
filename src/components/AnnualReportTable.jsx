@@ -100,7 +100,7 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                     <div className="monthly-card-row">
                         <span className="text-slate-600">기타수당</span>
                         <span className="font-bold">{formatMoney(
-                            row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance
+                            row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance + (row.welfarePointsPayment || 0)
                         )}</span>
                     </div>
                     
@@ -199,7 +199,7 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                         </td>
                                         <td className="py-2 px-3 text-right border">{formatMoneyCompact(row.baseSalary)}</td>
                                         <td className="py-2 px-3 text-right border">
-                                            {formatMoneyCompact(row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance)}
+                                            {formatMoneyCompact(row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance + (row.welfarePointsPayment || 0))}
                                         </td>
                                         <td className={`py-2 px-3 text-right border ${row.holidayBonus > 0 ? 'text-blue-600 font-bold' : 'text-slate-300'}`}>
                                             {row.holidayBonus > 0 ? formatMoneyCompact(row.holidayBonus) : '-'}
@@ -221,7 +221,7 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                     <td className="py-3 px-3 text-center border" colSpan={2}>연간 합계</td>
                                     <td className="py-3 px-3 text-right border">
                                         {formatMoneyCompact(annualReport.months.reduce((acc, m) => 
-                                            acc + m.mealAllowance + m.managerAllowance + m.familyAllowance + m.corporationAllowance + m.districtAllowance, 0
+                                            acc + m.mealAllowance + m.managerAllowance + m.familyAllowance + m.corporationAllowance + m.districtAllowance + (m.welfarePointsPayment || 0), 0
                                         ))}
                                     </td>
                                     <td className="py-3 px-3 text-right border text-blue-600">
@@ -349,7 +349,7 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                         </td>
                                         <td className="py-3 px-2 text-slate-500">
                                             {formatMoney(
-                                                row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance
+                                                row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance + (row.welfarePointsPayment || 0)
                                             )}
                                         </td>
                                         <td className="py-3 px-2 font-bold text-blue-900 bg-blue-50/30 border-l border-r border-blue-50">
@@ -375,7 +375,7 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                     {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.holidayBonus, 0))}
                                 </td>
                                 <td className="py-4 px-2">
-                                    {formatMoney(annualReport.months.reduce((acc, cur) => acc + (cur.mealAllowance + cur.managerAllowance + cur.familyAllowance + cur.corporationAllowance + cur.districtAllowance), 0))}
+                                    {formatMoney(annualReport.months.reduce((acc, cur) => acc + (cur.mealAllowance + cur.managerAllowance + cur.familyAllowance + cur.corporationAllowance + cur.districtAllowance + (cur.welfarePointsPayment || 0)), 0))}
                                 </td>
                                 <td className="py-4 px-2 text-blue-900">
                                     {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.monthlyTotal, 0))}
