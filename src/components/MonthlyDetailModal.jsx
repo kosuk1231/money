@@ -7,6 +7,7 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
 
     const [monthDetails, setMonthDetails] = useState({
         overtimeHours: 0,
+        nightWorkHours: 0, // 야간근로 시간 (주40시간 내, 0.5배 가산)
         holidayWorkHours: 0,
         includeHolidayBonus: false,
         includeWelfarePoints: false,
@@ -43,6 +44,10 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
 
         const overtimePay = Math.floor(hourlyRate * 1.5 * monthDetails.overtimeHours);
 
+        // 야간근로수당: 주40시간 내 야간근로에 대한 0.5배 가산
+        // 야간근로는 기본급에 이미 포함되어 있으므로, 추가로 0.5배만 지급
+        const nightWorkPay = Math.floor(hourlyRate * 0.5 * monthDetails.nightWorkHours);
+
         // Holiday Bonus (60% of Base * 2 times a year -> 120% total, so 60% per time)
         // Actually typically "120% of Base Salary" is annual, so 60% per holiday (Seol/Chuseok)? 
         // Logic in salaryData was "annualHoliday = base * 1.2". So one time is 0.6.
@@ -56,7 +61,7 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
             (baseData.hobong >= 10 ? ALLOWANCE_RULES.WELFARE_POINT_HIGH : ALLOWANCE_RULES.WELFARE_POINT_LOW) : 0;
 
         // 3. Totals
-        const totalTaxable = baseSalary + managerAllowance + familyAllowance + monthlyCorporation + overtimePay + holidayBonus + welfarePoints; // Meal is non-taxable
+        const totalTaxable = baseSalary + managerAllowance + familyAllowance + monthlyCorporation + overtimePay + nightWorkPay + holidayBonus + welfarePoints; // Meal is non-taxable
         const totalPay = totalTaxable + mealAllowance; // Meal added back for total pay (which includes non-taxable) but Taxable is separate
 
         // 4. Deductions
@@ -88,6 +93,7 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
             familyAllowance,
             monthlyCorporation,
             overtimePay,
+            nightWorkPay,
             holidayBonus,
             welfarePoints,
             totalPay,
@@ -148,6 +154,37 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                             {detailResult && monthDetails.overtimeHours > 0 && (
                                 <p className="text-xs text-blue-600 mt-2">
                                     시급: {formatMoney(Math.floor(detailResult.hourlyRate))} × 1.5
+                                </p>
+                            )}
+                        </div>
+
+                        <div className="bg-slate-50 p-4 rounded-lg border border-slate-200">
+                            <label className="block text-sm font-bold text-slate-600 mb-2 flex items-center gap-1">
+                                야간근로 (시간)
+                                <Tooltip content="주40시간 내 야간근로(22시~06시)에 대해 0.5배가 가산됩니다. 시간외수당과 별도입니다.">
+                                    <InfoIcon />
+                                </Tooltip>
+                            </label>
+                            <div className="relative flex items-center">
+                                    <input
+                                        type="number"
+                                        min="0"
+                                        value={monthDetails.nightWorkHours || ''}
+                                        onChange={(e) => {
+                                            const val = e.target.value;
+                                            setMonthDetails(prev => ({
+                                                ...prev,
+                                                nightWorkHours: val === '' ? 0 : parseInt(val)
+                                            }));
+                                        }}
+                                        placeholder="0"
+                                        className="w-32 text-right p-2 border border-slate-300 rounded font-bold focus:border-blue-500 outline-none placeholder:text-slate-300"
+                                    />
+                                    <span className="ml-1 text-slate-600">시간</span>
+                            </div>
+                            {detailResult && monthDetails.nightWorkHours > 0 && (
+                                <p className="text-xs text-purple-600 mt-2">
+                                    시급: {formatMoney(Math.floor(detailResult.hourlyRate))} × 0.5
                                 </p>
                             )}
                         </div>
@@ -281,6 +318,18 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
                                                 )}
                                             </td>
                                             <td className="font-bold text-blue-600">{formatMoney(detailResult.overtimePay)}</td>
+                                        </tr>
+                                        <tr className={`flex justify-between py-2 ${detailResult.nightWorkPay > 0 ? 'bg-purple-50 -mx-2 px-2 rounded' : ''}`}>
+                                            <td className="text-slate-700 font-bold flex items-center gap-1">
+                                                야간근로수당
+                                                {detailResult.nightWorkPay > 0 && (
+                                                    <span className="text-xs text-purple-600">({monthDetails.nightWorkHours}시간)</span>
+                                                )}
+                                                <Tooltip content="주40시간 내 야간근로(22시~06시)에 대한 0.5배 가산금">
+                                                    <InfoIcon />
+                                                </Tooltip>
+                                            </td>
+                                            <td className="font-bold text-purple-600">{formatMoney(detailResult.nightWorkPay)}</td>
                                         </tr>
                                         <tr className={`flex justify-between py-2 ${detailResult.holidayBonus > 0 ? 'bg-blue-50 -mx-2 px-2 rounded' : ''}`}>
                                             <td className="text-slate-700 font-bold">명절 휴가비</td>
