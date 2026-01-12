@@ -481,6 +481,7 @@ export default function CalculatorLayout() {
                                     grade={formData.grade} 
                                     hobong={formData.promotionMonth && (new Date().getMonth() + 1) >= parseInt(formData.promotionMonth) ? parseInt(formData.hobong) + 1 : formData.hobong}
                                     salary2025={salary2025}
+                                    reportSummary={annualReport?.summary}
                                />
                            )}
                         </div>

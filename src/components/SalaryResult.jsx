@@ -1,7 +1,7 @@
 import React from 'react';
 import Tooltip, { InfoIcon } from './Tooltip';
 
-export default function SalaryResult({ result, grade, hobong, salary2025 }) {
+export default function SalaryResult({ result, grade, hobong, salary2025, reportSummary }) {
     const formatMoney = (amount) => {
         const safeAmount = Number(amount) || 0;
         if (isNaN(safeAmount)) return '₩0';
@@ -42,8 +42,18 @@ export default function SalaryResult({ result, grade, hobong, salary2025 }) {
         </div>
     );
 
+    // Use reportSummary for annual values if available (accurate with promotion)
+    const annualPreTax = reportSummary?.annualPreTax ?? result.annualTotal;
+    const annualPostTax = reportSummary?.annualPostTax ?? result.annualNetPay;
+    const annualHoliday = reportSummary?.annualHoliday ?? result.annualHoliday;
+    const welfarePoints = reportSummary?.welfarePoints ?? result.welfarePoints;
+    const annualDistrict = reportSummary?.annualDistrict ?? result.districtAllowance;
+    
+    // Calculate 12-month base salary from annual values
+    const twelveMonthSalary = annualPreTax - annualHoliday - welfarePoints - annualDistrict;
+
     // Calculate YoY difference
-    const yoyDiff = salary2025 ? formatDifference(result.annualTotal, salary2025.annualTotal) : null;
+    const yoyDiff = salary2025 ? formatDifference(annualPreTax, salary2025.annualTotal) : null;
 
     return (
         <div className="flex flex-col h-full gap-6">
@@ -172,7 +182,7 @@ export default function SalaryResult({ result, grade, hobong, salary2025 }) {
                     <div className="space-y-2 flex flex-col justify-center">
                         <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
                             <span>12개월 급여</span>
-                            <span>{formatMoney(result.monthlyTotal * 12)}</span>
+                            <span>{formatMoney(twelveMonthSalary)}</span>
                         </div>
                         <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
                             <span className="flex items-center gap-1">
@@ -181,7 +191,7 @@ export default function SalaryResult({ result, grade, hobong, salary2025 }) {
                                     <InfoIcon />
                                 </Tooltip>
                             </span>
-                            <span>{formatMoney(result.annualHoliday)}</span>
+                            <span>{formatMoney(annualHoliday)}</span>
                         </div>
                         <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
                             <span className="flex items-center gap-1">
@@ -190,12 +200,12 @@ export default function SalaryResult({ result, grade, hobong, salary2025 }) {
                                     <InfoIcon />
                                 </Tooltip>
                             </span>
-                            <span>{formatMoney(result.welfarePoints)}</span>
+                            <span>{formatMoney(welfarePoints)}</span>
                         </div>
-                        {result.districtAllowance > 0 && (
+                        {annualDistrict > 0 && (
                             <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
                                 <span>자치구 복지포인트/수당</span>
-                                <span>{formatMoney(result.districtAllowance)}</span>
+                                <span>{formatMoney(annualDistrict)}</span>
                             </div>
                         )}
                     </div>
@@ -203,11 +213,11 @@ export default function SalaryResult({ result, grade, hobong, salary2025 }) {
                     <div className="flex flex-col justify-center space-y-3 md:border-l-2 md:border-yellow-200 md:pl-8">
                         <div className="flex justify-between items-end">
                             <span className="text-base font-bold text-yellow-800">연봉 (세전)</span>
-                            <span className="text-2xl font-black text-yellow-900">{formatMoney(result.annualTotal)}</span>
+                            <span className="text-2xl font-black text-yellow-900">{formatMoney(annualPreTax)}</span>
                         </div>
                         <div className="flex justify-between items-end pt-2 border-t border-yellow-200/50">
                             <span className="text-lg font-black text-blue-900">연봉 (세후)</span>
-                            <span className="text-3xl font-black text-blue-900">{formatMoney(result.annualNetPay)}</span>
+                            <span className="text-3xl font-black text-blue-900">{formatMoney(annualPostTax)}</span>
                         </div>
                     </div>
                 </div>
