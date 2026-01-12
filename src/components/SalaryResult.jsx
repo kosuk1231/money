@@ -1,7 +1,18 @@
 import React from 'react';
 import Tooltip, { InfoIcon } from './Tooltip';
 
-export default function SalaryResult({ result, grade, hobong, salary2025, reportSummary }) {
+export default function SalaryResult({ result, grade, hobong, salary2025, reportSummary, optionalDeductions = {}, onOptionalDeductionChange }) {
+    // Calculate optional deductions
+    const mealDeduction = optionalDeductions.includeMealDeduction ? (optionalDeductions.mealDeductionAmount || 0) : 0;
+    const mutualAid = optionalDeductions.includeMutualAid ? (optionalDeductions.mutualAidAmount || 0) : 0;
+    const totalOptionalDeductions = mealDeduction + mutualAid;
+
+    // Handler for inline deduction input changes
+    const handleDeductionChange = (field, value) => {
+        if (onOptionalDeductionChange) {
+            onOptionalDeductionChange(field, value);
+        }
+    };
     const formatMoney = (amount) => {
         const safeAmount = Number(amount) || 0;
         if (isNaN(safeAmount)) return '₩0';
@@ -180,10 +191,65 @@ export default function SalaryResult({ result, grade, hobong, salary2025, report
                             isDeduction={true}
                             tooltip="소득세는 과세표준에 따라 계산되며, 지방소득세는 소득세의 10%입니다."
                         />
+                        
+                        {/* 선택적 공제 항목 - 인라인 입력 */}
+                        <div className="mt-3 pt-3 border-t border-red-100 space-y-2">
+                            <div className="flex justify-between items-center py-1.5 pl-3">
+                                <label className="flex items-center gap-2 text-sm font-bold text-red-700 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={optionalDeductions.includeMealDeduction || false}
+                                        onChange={(e) => handleDeductionChange('includeMealDeduction', e.target.checked)}
+                                        className="w-4 h-4 text-red-600 rounded focus:ring-red-500 border-red-300"
+                                    />
+                                    식대 공제
+                                </label>
+                                {optionalDeductions.includeMealDeduction && (
+                                    <div className="flex items-center gap-1 animate-fadeIn">
+                                        <span className="text-red-600 font-bold">-</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={optionalDeductions.mealDeductionAmount || ''}
+                                            onChange={(e) => handleDeductionChange('mealDeductionAmount', e.target.value)}
+                                            placeholder="금액"
+                                            className="w-24 p-1.5 text-right border border-red-200 rounded font-bold text-red-600 focus:border-red-500 outline-none placeholder:text-red-300 bg-white"
+                                        />
+                                        <span className="text-red-600 text-sm font-bold">원</span>
+                                    </div>
+                                )}
+                            </div>
+                            
+                            <div className="flex justify-between items-center py-1.5 pl-3">
+                                <label className="flex items-center gap-2 text-sm font-bold text-red-700 cursor-pointer">
+                                    <input
+                                        type="checkbox"
+                                        checked={optionalDeductions.includeMutualAid || false}
+                                        onChange={(e) => handleDeductionChange('includeMutualAid', e.target.checked)}
+                                        className="w-4 h-4 text-red-600 rounded focus:ring-red-500 border-red-300"
+                                    />
+                                    상조회비
+                                </label>
+                                {optionalDeductions.includeMutualAid && (
+                                    <div className="flex items-center gap-1 animate-fadeIn">
+                                        <span className="text-red-600 font-bold">-</span>
+                                        <input
+                                            type="number"
+                                            min="0"
+                                            value={optionalDeductions.mutualAidAmount || ''}
+                                            onChange={(e) => handleDeductionChange('mutualAidAmount', e.target.value)}
+                                            placeholder="금액"
+                                            className="w-24 p-1.5 text-right border border-red-200 rounded font-bold text-red-600 focus:border-red-500 outline-none placeholder:text-red-300 bg-white"
+                                        />
+                                        <span className="text-red-600 text-sm font-bold">원</span>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                     </div>
                     <div className="mt-4 pt-3 border-t-2 border-red-200 flex justify-between items-center text-red-900 font-bold">
                         <span className="text-base">공제 합계</span>
-                        <span className="text-xl">- {formatMoney(result.deductions.total)}</span>
+                        <span className="text-xl">- {formatMoney(result.deductions.total + totalOptionalDeductions)}</span>
                     </div>
                 </div>
             </div>
@@ -192,9 +258,9 @@ export default function SalaryResult({ result, grade, hobong, salary2025, report
             <div className="bg-blue-50 border-4 border-blue-600 rounded-xl p-4 md:p-6 shadow-[6px_6px_0px_0px_rgba(37,99,235,0.3)] flex-none flex flex-col md:flex-row items-center justify-between gap-2">
                 <div className="flex flex-col text-center md:text-left">
                     <span className="text-lg md:text-2xl font-black text-blue-900">실 수령액 (월)</span>
-                    <span className="text-xs text-blue-800 opacity-70 mt-1">* 비과세 식대 및 부양가족 공제 적용</span>
+                    <span className="text-xs text-blue-800 opacity-70 mt-1">* 비과세 식대 및 부양가족 공제 적용{totalOptionalDeductions > 0 ? ' + 선택적 공제' : ''}</span>
                 </div>
-                <span className="text-3xl md:text-5xl font-black text-blue-600 tracking-tight break-all md:break-normal">{formatMoney(result.netPay)}</span>
+                <span className="text-3xl md:text-5xl font-black text-blue-600 tracking-tight break-all md:break-normal">{formatMoney(result.netPay - totalOptionalDeductions)}</span>
             </div>
 
             {/* BOTTOM ROW: Annual (Takes less space: flex-[1]) */}

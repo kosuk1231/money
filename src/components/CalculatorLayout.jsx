@@ -23,7 +23,12 @@ export default function CalculatorLayout() {
         districtAmount: 0, 
         districtFrequency: 'monthly', // monthly | yearly (only for allowance)
         // Holiday Bonus Months setting
-        holidayBonusMonths: [2, 9] // Default: Feb & Sep
+        holidayBonusMonths: [2, 9], // Default: Feb & Sep
+        // 선택적 공제 항목
+        includeMealDeduction: false,
+        mealDeductionAmount: 0,
+        includeMutualAid: false,
+        mutualAidAmount: 0
     });
 
     const [salaryResult, setSalaryResult] = useState(null);
@@ -469,6 +474,69 @@ export default function CalculatorLayout() {
                                 </div>
                             </div>
                         </div>
+
+                        {/* 선택적 공제 항목 */}
+                        <div className="mt-4 pt-4 border-t border-slate-200">
+                            <h3 className="text-md font-black text-red-800 mb-3 flex items-center gap-2">
+                                <span className="text-xl">💸</span> 선택적 공제 항목
+                            </h3>
+                            
+                            <div className="space-y-3">
+                                {/* 식대 공제 */}
+                                <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                                    <label className="flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="includeMealDeduction"
+                                            checked={formData.includeMealDeduction}
+                                            onChange={handleInputChange}
+                                            className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
+                                        />
+                                        <span className="ml-2 font-bold text-slate-700 text-sm">식대 공제</span>
+                                    </label>
+                                    {formData.includeMealDeduction && (
+                                        <div className="mt-2 animate-fadeIn">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                name="mealDeductionAmount"
+                                                value={formData.mealDeductionAmount || ''}
+                                                onChange={handleInputChange}
+                                                placeholder="금액 입력"
+                                                className="w-full p-2 border border-red-200 rounded font-bold text-right focus:border-red-500 outline-none placeholder:text-slate-300"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* 상조회비 */}
+                                <div className="bg-red-50 p-3 rounded-lg border border-red-100">
+                                    <label className="flex items-center cursor-pointer">
+                                        <input
+                                            type="checkbox"
+                                            name="includeMutualAid"
+                                            checked={formData.includeMutualAid}
+                                            onChange={handleInputChange}
+                                            className="w-4 h-4 text-red-600 rounded focus:ring-red-500"
+                                        />
+                                        <span className="ml-2 font-bold text-slate-700 text-sm">상조회비</span>
+                                    </label>
+                                    {formData.includeMutualAid && (
+                                        <div className="mt-2 animate-fadeIn">
+                                            <input
+                                                type="number"
+                                                min="0"
+                                                name="mutualAidAmount"
+                                                value={formData.mutualAidAmount || ''}
+                                                onChange={handleInputChange}
+                                                placeholder="금액 입력"
+                                                className="w-full p-2 border border-red-200 rounded font-bold text-right focus:border-red-500 outline-none placeholder:text-slate-300"
+                                            />
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                     {/* RESULT SECTION (Right Side) */}
@@ -482,6 +550,18 @@ export default function CalculatorLayout() {
                                     hobong={formData.promotionMonth && (new Date().getMonth() + 1) >= parseInt(formData.promotionMonth) ? parseInt(formData.hobong) + 1 : formData.hobong}
                                     salary2025={salary2025}
                                     reportSummary={annualReport?.summary}
+                                    optionalDeductions={{
+                                        includeMealDeduction: formData.includeMealDeduction,
+                                        mealDeductionAmount: parseInt(formData.mealDeductionAmount) || 0,
+                                        includeMutualAid: formData.includeMutualAid,
+                                        mutualAidAmount: parseInt(formData.mutualAidAmount) || 0
+                                    }}
+                                    onOptionalDeductionChange={(field, value) => {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            [field]: typeof value === 'boolean' ? value : parseInt(value) || 0
+                                        }));
+                                    }}
                                />
                            )}
                         </div>
