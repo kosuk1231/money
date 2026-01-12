@@ -68,9 +68,23 @@
 
 /* PDF Export Styles */
 @media print {
-  body {
+  @page {
+    size: A4 landscape;
+    margin: 10mm;
+  }
+  
+  html, body {
     -webkit-print-color-adjust: exact !important;
     print-color-adjust: exact !important;
+    width: 100% !important;
+    height: auto !important;
+    overflow: visible !important;
+  }
+  
+  body {
+    margin: 0 !important;
+    padding: 0 !important;
+    font-size: 11px !important;
   }
   
   .print\\:hidden {
@@ -79,6 +93,50 @@
   
   .print\\:block {
     display: block !important;
+  }
+  
+  /* PDF Preview 전용 스타일 */
+  .pdf-preview-container {
+    position: static !important;
+    overflow: visible !important;
+    padding: 0 !important;
+    max-width: none !important;
+    font-size: 10px !important;
+  }
+  
+  .pdf-preview-container * {
+    page-break-inside: avoid;
+  }
+  
+  .pdf-preview-container table {
+    font-size: 9px !important;
+  }
+  
+  .pdf-preview-container th,
+  .pdf-preview-container td {
+    padding: 4px 6px !important;
+  }
+  
+  .pdf-summary-grid {
+    display: flex !important;
+    gap: 8px !important;
+    margin-bottom: 12px !important;
+  }
+  
+  .pdf-summary-grid > div {
+    flex: 1;
+    padding: 8px !important;
+  }
+  
+  .pdf-info-grid {
+    display: flex !important;
+    gap: 8px !important;
+    margin-bottom: 8px !important;
+  }
+  
+  .pdf-info-grid > div {
+    flex: 1;
+    padding: 8px !important;
   }
 }
 
