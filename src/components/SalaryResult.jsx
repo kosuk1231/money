@@ -55,6 +55,44 @@ export default function SalaryResult({ result, grade, hobong, salary2025, report
     // Calculate YoY difference
     const yoyDiff = salary2025 ? formatDifference(annualPreTax, salary2025.annualTotal) : null;
 
+    // Calculate percentage differences for each item
+    const getPercentChange = (current, previous) => {
+        if (!previous || previous === 0) return null;
+        const percent = ((current - previous) / previous * 100).toFixed(1);
+        return parseFloat(percent);
+    };
+
+    // Calculate percentage based on BASE SALARY only (not full monthly total)
+    // This gives the accurate "기본급 인상률" that users expect to see
+    const baseSalary2026 = result.baseSalary;
+    const baseSalary2025 = salary2025?.baseSalary || 0;
+    
+    const percentChanges = salary2025 ? {
+        // Use base salary comparison for 12개월 급여 (reflects actual 기본급 인상률)
+        twelveMonth: getPercentChange(baseSalary2026, baseSalary2025),
+        // Holiday bonus is based on base salary, so same percentage
+        holiday: getPercentChange(baseSalary2026, baseSalary2025),
+        welfare: getPercentChange(welfarePoints, salary2025.welfarePoints),
+    } : null;
+
+    // Percentage badge component
+    const PercentBadge = ({ percent }) => {
+        if (percent === null || percent === undefined || isNaN(percent)) return null;
+        const isPositive = percent > 0;
+        const isZero = percent === 0;
+        return (
+            <span className={`ml-2 text-xs font-bold px-1.5 py-0.5 rounded-full ${
+                isZero 
+                    ? 'bg-gray-100 text-gray-500' 
+                    : isPositive 
+                        ? 'bg-emerald-100 text-emerald-700' 
+                        : 'bg-red-100 text-red-700'
+            }`}>
+                {isPositive ? '+' : ''}{percent}%
+            </span>
+        );
+    };
+
     return (
         <div className="flex flex-col h-full gap-6">
 
@@ -180,30 +218,39 @@ export default function SalaryResult({ result, grade, hobong, salary2025, report
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-8 flex-1 content-center">
                     <div className="space-y-2 flex flex-col justify-center">
-                        <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
+                        <div className="flex justify-between items-center text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
                             <span>12개월 급여</span>
-                            <span>{formatMoney(twelveMonthSalary)}</span>
+                            <span className="flex items-center">
+                                {formatMoney(twelveMonthSalary)}
+                                {percentChanges && <PercentBadge percent={percentChanges.twelveMonth} />}
+                            </span>
                         </div>
-                        <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
+                        <div className="flex justify-between items-center text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
                             <span className="flex items-center gap-1">
                                 명절휴가비 (120%)
                                 <Tooltip content="설날과 추석 각각 기본급의 60%씩, 총 120%가 지급됩니다.">
                                     <InfoIcon />
                                 </Tooltip>
                             </span>
-                            <span>{formatMoney(annualHoliday)}</span>
+                            <span className="flex items-center">
+                                {formatMoney(annualHoliday)}
+                                {percentChanges && <PercentBadge percent={percentChanges.holiday} />}
+                            </span>
                         </div>
-                        <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
+                        <div className="flex justify-between items-center text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
                             <span className="flex items-center gap-1">
                                 서울시 복지포인트
                                 <Tooltip content="10호봉 이상: 400,000원 / 10호봉 미만: 300,000원. 연 1회 지급됩니다.">
                                     <InfoIcon />
                                 </Tooltip>
                             </span>
-                            <span>{formatMoney(welfarePoints)}</span>
+                            <span className="flex items-center">
+                                {formatMoney(welfarePoints)}
+                                {percentChanges && <PercentBadge percent={percentChanges.welfare} />}
+                            </span>
                         </div>
                         {annualDistrict > 0 && (
-                            <div className="flex justify-between text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
+                            <div className="flex justify-between items-center text-yellow-900 opacity-90 text-base font-bold border-b border-yellow-100 pb-1">
                                 <span>자치구 복지포인트/수당</span>
                                 <span>{formatMoney(annualDistrict)}</span>
                             </div>
