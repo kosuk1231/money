@@ -63,15 +63,6 @@
 .promotion-highlight {
   background: linear-gradient(90deg, rgba(254, 240, 138, 0.4) 0%, rgba(253, 224, 71, 0.3) 50%, rgba(254, 240, 138, 0.4) 100%);
   border-left: 3px solid #eab308;
-  position: relative;
-}
-
-.promotion-highlight::before {
-  content: '⬆';
-  position: absolute;
-  left: -20px;
-  font-size: 12px;
-  color: #ca8a04;
 }
 
 /* PDF Export Styles */
