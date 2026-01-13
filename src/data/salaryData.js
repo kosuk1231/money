@@ -304,9 +304,9 @@ export function calculateSalary(grade, hobong, options = {}) {
   }
   
   // Ordinary Wage Calculation (New Formula)
-  // Ordinary Wage = Base + (Annual Holiday Bonus / 12)
+  // Ordinary Wage = Base + Meal Allowance + (Annual Holiday Bonus / 12)
   const annualHolidayTotal = baseSalary * 1.2;
-  const ordinaryWage = baseSalary + Math.floor(annualHolidayTotal / 12);
+  const ordinaryWage = baseSalary + mealAllowance + Math.floor(annualHolidayTotal / 12);
 
   // Allowances Total (Monthly Normal)
   const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrictEstimate;

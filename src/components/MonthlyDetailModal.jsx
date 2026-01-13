@@ -50,7 +50,9 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
         let monthlyCorporation = corpData.type === 'yearly' ? Math.floor(corpData.amount / 12) : corpData.amount;
 
         // 3. Overtime & Variable
-        const ordinaryWage = baseSalary + managerAllowance + mealAllowance + monthlyCorporation;
+        // Ordinary Wage = Base + Meal Allowance + (Annual Holiday Bonus / 12)
+        const annualHolidayTotal = baseSalary * 1.2;
+        const ordinaryWage = baseSalary + mealAllowance + Math.floor(annualHolidayTotal / 12);
         const hourlyRate = ordinaryWage / 209;
 
         const overtimePay = Math.floor(hourlyRate * 1.5 * monthDetails.overtimeHours);
