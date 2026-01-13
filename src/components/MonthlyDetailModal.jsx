@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { ALLOWANCE_RULES, DEDUCTION_RATES, calculateIncomeTax, calculateFamilyAllowance, SALARY_TABLE, getTotalChildren } from '../data/salaryData';
+import { ALLOWANCE_RULES, DEDUCTION_RATES, calculateIncomeTax, calculateFamilyAllowance, SALARY_TABLE, getTotalChildren, calculateChildUnder6TaxExempt } from '../data/salaryData';
 import Tooltip, { InfoIcon } from './Tooltip';
 
 export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
@@ -70,9 +70,10 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
         const totalPay = totalTaxable + mealAllowance; // Meal added back for total pay (which includes non-taxable) but Taxable is separate
 
         // 4. Deductions
-        // Taxable Income = Total Pay - NonTaxable(Meal)
+        // Taxable Income = Total Pay - NonTaxable(Meal) - Child Under 6 Tax Exempt
         // (Note: Welfare points are usually taxable, Holiday bonus is taxable)
-        const taxableIncome = totalPay - mealAllowance; // Meal is the only non-taxable here usually.
+        const childUnder6TaxExempt = calculateChildUnder6TaxExempt(baseData.numChildren);
+        const taxableIncome = totalPay - mealAllowance - childUnder6TaxExempt; // Meal and child under 6 allowance are non-taxable
 
         const pensionIncome = Math.min(taxableIncome, 6170000);
         const nationalPension = Math.floor(pensionIncome * DEDUCTION_RATES.PENSION / 10) * 10;
@@ -99,6 +100,7 @@ export default function MonthlyDetailModal({ isOpen, onClose, baseData }) {
             mealAllowance,
             managerAllowance,
             familyAllowance,
+            childUnder6TaxExempt,
             monthlyCorporation,
             overtimePay,
             nightWorkPay,

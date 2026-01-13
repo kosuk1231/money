@@ -158,7 +158,8 @@ export const ALLOWANCE_RULES = {
     CHILD_2: 80000,
     CHILD_3_PLUS: 120000,
     OTHERS: 20000
-  }
+  },
+  CHILD_UNDER_6_TAX_EXEMPT_MAX: 200000 // 만 6세 이하 자녀 비과세 한도 (월 최대 20만원)
 };
 
 // 2025 Allowance Rules
@@ -202,6 +203,36 @@ export function calculateFamilyAllowance(hasSpouse, numChildren, numOthers) {
   if (numOthers > 0) total += numOthers * ALLOWANCE_RULES.FAMILY.OTHERS;
 
   return total;
+}
+
+/**
+ * Calculate tax-exempt amount for children under 6 years old
+ * Maximum limit: 200,000 KRW per month
+ * @param {object} numChildren - Object with {first, firstUnder6, second, secondUnder6, thirdPlus, thirdPlusUnder6}
+ */
+export function calculateChildUnder6TaxExempt(numChildren) {
+  if (typeof numChildren !== 'object' || numChildren === null) return 0;
+  
+  let taxExemptFromChildren = 0;
+  
+  // First child under 6
+  if (numChildren.first && numChildren.firstUnder6) {
+    taxExemptFromChildren += ALLOWANCE_RULES.FAMILY.CHILD_1;
+  }
+  
+  // Second child under 6
+  if (numChildren.second && numChildren.secondUnder6) {
+    taxExemptFromChildren += ALLOWANCE_RULES.FAMILY.CHILD_2;
+  }
+  
+  // Third+ children under 6
+  if (numChildren.thirdPlus > 0 && numChildren.thirdPlusUnder6 > 0) {
+    const under6Count = Math.min(numChildren.thirdPlusUnder6, numChildren.thirdPlus);
+    taxExemptFromChildren += under6Count * ALLOWANCE_RULES.FAMILY.CHILD_3_PLUS;
+  }
+  
+  // Apply maximum limit of 200,000 KRW
+  return Math.min(taxExemptFromChildren, ALLOWANCE_RULES.CHILD_UNDER_6_TAX_EXEMPT_MAX);
 }
 
 /**
@@ -281,7 +312,9 @@ export function calculateSalary(grade, hobong, options = {}) {
   const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrictEstimate;
 
   // Deductions (Monthly Normal)
-  const nonTaxableAmount = mealAllowance; // Meal is non-taxable
+  // Non-taxable: Meal allowance + Child under 6 family allowance (max 200,000)
+  const childUnder6TaxExempt = calculateChildUnder6TaxExempt(options.numChildren);
+  const nonTaxableAmount = mealAllowance + childUnder6TaxExempt;
   const taxableIncome = Math.max(0, monthlyTotal - nonTaxableAmount);
 
   const pensionIncome = Math.min(taxableIncome, 6170000); // 2026 cap check needed, using existing
@@ -317,6 +350,7 @@ export function calculateSalary(grade, hobong, options = {}) {
     mealAllowance,
     managerAllowance,
     familyAllowance,
+    childUnder6TaxExempt,
     corporationAllowance: monthlyCorporation,
     districtAllowance: annualDistrict || 0, 
     monthlyDistrictEstimate, 
@@ -412,8 +446,10 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     const monthlyTotal = baseSalary + mealAllowance + managerAllowance + familyAllowance + monthlyCorporation + monthlyDistrict + holidayBonus + welfarePointsPayment;
 
     // 5. Deductions (Welfare points are non-taxable, including district welfare points)
+    // Also add child under 6 tax exemption (max 200,000 KRW)
     const districtWelfareNonTaxable = distData.type === 'point' ? monthlyDistrict : 0;
-    const nonTaxable = mealAllowance + welfarePointsPayment + districtWelfareNonTaxable; 
+    const childUnder6TaxExempt = calculateChildUnder6TaxExempt(options.numChildren);
+    const nonTaxable = mealAllowance + welfarePointsPayment + districtWelfareNonTaxable + childUnder6TaxExempt; 
     const taxable = Math.max(0, monthlyTotal - nonTaxable);
 
     const pensionIncome = Math.min(taxable, 6170000);

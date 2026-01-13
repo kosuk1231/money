@@ -14,8 +14,11 @@ export default function CalculatorLayout() {
         hasSpouse: false,
         // New detailed children format
         childFirst: false,
+        childFirstUnder6: false,
         childSecond: false,
+        childSecondUnder6: false,
         childThirdPlus: 0,
+        childThirdPlusUnder6: 0,
         numOthers: 0,
         corporationAllowance: 0,
         corporationType: 'monthly', 
@@ -40,8 +43,11 @@ export default function CalculatorLayout() {
     // Convert detailed children format to object for calculations
     const getChildrenObject = () => ({
         first: formData.childFirst ? 1 : 0,
+        firstUnder6: formData.childFirst && formData.childFirstUnder6,
         second: formData.childSecond ? 1 : 0,
-        thirdPlus: parseInt(formData.childThirdPlus) || 0
+        secondUnder6: formData.childSecond && formData.childSecondUnder6,
+        thirdPlus: parseInt(formData.childThirdPlus) || 0,
+        thirdPlusUnder6: Math.min(parseInt(formData.childThirdPlusUnder6) || 0, parseInt(formData.childThirdPlus) || 0)
     });
 
     useEffect(() => {
@@ -245,48 +251,93 @@ export default function CalculatorLayout() {
                                         </div>
                                         
                                         <div className="space-y-2">
-                                            <label className="flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    name="childFirst"
-                                                    checked={formData.childFirst}
-                                                    onChange={handleInputChange}
-                                                    className="w-4 h-4 text-blue-600 rounded"
-                                                />
-                                                <span className="ml-2 text-sm font-medium text-slate-600">첫째 자녀 (₩50,000)</span>
-                                            </label>
+                                            <div className="flex items-center justify-between">
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="childFirst"
+                                                        checked={formData.childFirst}
+                                                        onChange={handleInputChange}
+                                                        className="w-4 h-4 text-blue-600 rounded"
+                                                    />
+                                                    <span className="ml-2 text-sm font-medium text-slate-600">첫째 자녀 (₩50,000)</span>
+                                                </label>
+                                                {formData.childFirst && (
+                                                    <label className="flex items-center gap-1 text-xs bg-green-50 px-2 py-1 rounded border border-green-200 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            name="childFirstUnder6"
+                                                            checked={formData.childFirstUnder6}
+                                                            onChange={handleInputChange}
+                                                            className="w-3 h-3 text-green-600 rounded"
+                                                        />
+                                                        <span className="text-green-700 font-medium">만6세↓</span>
+                                                    </label>
+                                                )}
+                                            </div>
                                             
-                                            <label className="flex items-center">
-                                                <input
-                                                    type="checkbox"
-                                                    name="childSecond"
-                                                    checked={formData.childSecond}
-                                                    onChange={handleInputChange}
-                                                    className="w-4 h-4 text-blue-600 rounded"
-                                                    disabled={!formData.childFirst}
-                                                />
-                                                <span className={`ml-2 text-sm font-medium ${formData.childFirst ? 'text-slate-600' : 'text-slate-400'}`}>
-                                                    둘째 자녀 (₩80,000)
-                                                </span>
-                                            </label>
+                                            <div className="flex items-center justify-between">
+                                                <label className="flex items-center">
+                                                    <input
+                                                        type="checkbox"
+                                                        name="childSecond"
+                                                        checked={formData.childSecond}
+                                                        onChange={handleInputChange}
+                                                        className="w-4 h-4 text-blue-600 rounded"
+                                                        disabled={!formData.childFirst}
+                                                    />
+                                                    <span className={`ml-2 text-sm font-medium ${formData.childFirst ? 'text-slate-600' : 'text-slate-400'}`}>
+                                                        둘째 자녀 (₩80,000)
+                                                    </span>
+                                                </label>
+                                                {formData.childSecond && (
+                                                    <label className="flex items-center gap-1 text-xs bg-green-50 px-2 py-1 rounded border border-green-200 cursor-pointer">
+                                                        <input
+                                                            type="checkbox"
+                                                            name="childSecondUnder6"
+                                                            checked={formData.childSecondUnder6}
+                                                            onChange={handleInputChange}
+                                                            className="w-3 h-3 text-green-600 rounded"
+                                                        />
+                                                        <span className="text-green-700 font-medium">만6세↓</span>
+                                                    </label>
+                                                )}
+                                            </div>
                                             
-                                            <div className="flex items-center gap-2">
-                                                <span className="text-sm font-medium text-slate-600">셋째 이상</span>
-                                                <select
-                                                    name="childThirdPlus"
-                                                    value={formData.childThirdPlus}
-                                                    onChange={handleInputChange}
-                                                    disabled={!formData.childSecond}
-                                                    className={`p-1.5 border border-slate-300 rounded font-bold text-sm w-20 ${!formData.childSecond ? 'bg-slate-100 text-slate-400' : ''}`}
-                                                >
-                                                    <option value="0">0명</option>
-                                                    <option value="1">1명</option>
-                                                    <option value="2">2명</option>
-                                                    <option value="3">3명</option>
-                                                    <option value="4">4명</option>
-                                                    <option value="5">5명</option>
-                                                </select>
-                                                <span className="text-xs text-slate-400">(1인당 ₩120,000)</span>
+                                            <div className="space-y-2">
+                                                <div className="flex items-center gap-2">
+                                                    <span className="text-sm font-medium text-slate-600">셋째 이상</span>
+                                                    <select
+                                                        name="childThirdPlus"
+                                                        value={formData.childThirdPlus}
+                                                        onChange={handleInputChange}
+                                                        disabled={!formData.childSecond}
+                                                        className={`p-1.5 border border-slate-300 rounded font-bold text-sm w-20 ${!formData.childSecond ? 'bg-slate-100 text-slate-400' : ''}`}
+                                                    >
+                                                        <option value="0">0명</option>
+                                                        <option value="1">1명</option>
+                                                        <option value="2">2명</option>
+                                                        <option value="3">3명</option>
+                                                        <option value="4">4명</option>
+                                                        <option value="5">5명</option>
+                                                    </select>
+                                                    <span className="text-xs text-slate-400">(1인당 ₩120,000)</span>
+                                                </div>
+                                                {parseInt(formData.childThirdPlus) > 0 && (
+                                                    <div className="flex items-center gap-2 pl-4">
+                                                        <span className="text-xs text-green-700">만6세↓</span>
+                                                        <select
+                                                            name="childThirdPlusUnder6"
+                                                            value={formData.childThirdPlusUnder6}
+                                                            onChange={handleInputChange}
+                                                            className="p-1 border border-green-300 rounded font-bold text-xs w-16 bg-green-50 text-green-700"
+                                                        >
+                                                            {Array.from({length: parseInt(formData.childThirdPlus) + 1}, (_, i) => (
+                                                                <option key={i} value={i}>{i}명</option>
+                                                            ))}
+                                                        </select>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </div>

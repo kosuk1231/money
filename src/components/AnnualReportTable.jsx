@@ -150,58 +150,58 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                     ✕ 닫기
                 </button>
                 
-                {/* PDF 콘텐츠 */}
-                <div className="pdf-preview-container p-6 print:p-0">
+                {/* PDF 콘텐츠 - 1페이지에 맞추기 */}
+                <div className="pdf-preview-container pdf-single-page p-4 print:p-0">
                     <div className="max-w-none mx-auto">
-                        {/* Header */}
-                        <div className="border-b-2 border-slate-800 pb-2 mb-4 flex justify-between items-start">
+                        {/* Header - 컴팩트 */}
+                        <div className="border-b-2 border-slate-800 pb-1 mb-2 flex justify-between items-start">
                             <div>
-                                <h1 className="text-xl font-black text-slate-900">2026년도 급여명세서 (연간)</h1>
-                                <p className="text-xs text-slate-600">서울시 사회복지시설 종사자 인건비 지급기준</p>
+                                <h1 className="text-lg font-black text-slate-900">2026년도 급여명세서 (연간)</h1>
+                                <p className="text-[10px] text-slate-600">서울시 사회복지시설 종사자 인건비 지급기준</p>
                             </div>
-                            <div className="text-right text-xs text-slate-500">
+                            <div className="text-right text-[10px] text-slate-500">
                                 <p>발행일: {dateStr}</p>
                             </div>
                         </div>
 
-                        {/* Summary Section - 컴팩트 */}
-                        <div className="pdf-summary-grid grid grid-cols-3 gap-2 mb-4 p-2 bg-slate-50 rounded text-sm">
-                            <div className="text-center p-2 bg-white rounded border border-slate-200">
-                                <div className="text-xs text-slate-500">연간 총 급여 (세전)</div>
-                                <div className="text-lg font-black text-slate-900">
+                        {/* Summary Section - 더 컴팩트 */}
+                        <div className="pdf-summary-grid grid grid-cols-3 gap-1 mb-2 p-1 bg-slate-50 rounded text-[10px]">
+                            <div className="text-center p-1 bg-white rounded border border-slate-200">
+                                <div className="text-[9px] text-slate-500">연간 총 급여 (세전)</div>
+                                <div className="text-sm font-black text-slate-900">
                                     {formatMoney(annualReport.summary.annualPreTax)}
                                 </div>
                             </div>
-                            <div className="text-center p-2 bg-white rounded border border-slate-200">
-                                <div className="text-xs text-slate-500">연간 공제 합계</div>
-                                <div className="text-lg font-black text-red-600">
+                            <div className="text-center p-1 bg-white rounded border border-slate-200">
+                                <div className="text-[9px] text-slate-500">연간 공제 합계</div>
+                                <div className="text-sm font-black text-red-600">
                                     -{formatMoney(totalDeductions)}
                                 </div>
                             </div>
-                            <div className="text-center p-2 bg-blue-50 rounded border-2 border-blue-300">
-                                <div className="text-xs text-blue-600">연간 실수령액</div>
-                                <div className="text-lg font-black text-blue-700">
+                            <div className="text-center p-1 bg-blue-50 rounded border-2 border-blue-300">
+                                <div className="text-[9px] text-blue-600">연간 실수령액</div>
+                                <div className="text-sm font-black text-blue-700">
                                     {formatMoney(annualReport.summary.annualPostTax)}
                                 </div>
                             </div>
                         </div>
 
-                        {/* Monthly Details Table - 컴팩트 */}
-                        <div className="mb-4">
-                            <h2 className="text-sm font-black text-slate-800 mb-2 border-b border-slate-200 pb-1">
+                        {/* Monthly Details Table - 더 컴팩트 */}
+                        <div className="mb-2">
+                            <h2 className="text-[10px] font-black text-slate-800 mb-1 border-b border-slate-200 pb-0.5">
                                 월별 지급 내역
                             </h2>
-                            <table className="w-full text-xs border-collapse border border-slate-300">
+                            <table className="w-full text-[9px] border-collapse border border-slate-300">
                                 <thead>
                                     <tr className="bg-slate-800 text-white">
-                                        <th className="py-1.5 px-2 text-center border border-slate-600">월</th>
-                                        <th className="py-1.5 px-2 text-center border border-slate-600">호봉</th>
-                                        <th className="py-1.5 px-2 text-right border border-slate-600">기본급</th>
-                                        <th className="py-1.5 px-2 text-right border border-slate-600">제수당</th>
-                                        <th className="py-1.5 px-2 text-right border border-slate-600">명절휴가비</th>
-                                        <th className="py-1.5 px-2 text-right border border-slate-600 bg-blue-700">지급총액</th>
-                                        <th className="py-1.5 px-2 text-right border border-slate-600 bg-red-700">공제총액</th>
-                                        <th className="py-1.5 px-2 text-right border border-slate-600 bg-yellow-600">실수령액</th>
+                                        <th className="py-1 px-1 text-center border border-slate-600">월</th>
+                                        <th className="py-1 px-1 text-center border border-slate-600">호봉</th>
+                                        <th className="py-1 px-1 text-right border border-slate-600">기본급</th>
+                                        <th className="py-1 px-1 text-right border border-slate-600">제수당</th>
+                                        <th className="py-1 px-1 text-right border border-slate-600">명절휴가비</th>
+                                        <th className="py-1 px-1 text-right border border-slate-600 bg-blue-700">지급총액</th>
+                                        <th className="py-1 px-1 text-right border border-slate-600 bg-red-700">공제총액</th>
+                                        <th className="py-1 px-1 text-right border border-slate-600 bg-yellow-600">실수령액</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -210,28 +210,28 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                             key={row.month} 
                                             className={`border-b border-slate-200 ${row.isPromotionMonth ? 'bg-yellow-50' : ''}`}
                                         >
-                                            <td className="py-1 px-2 text-center border border-slate-200 font-bold">
+                                            <td className="py-0.5 px-1 text-center border border-slate-200 font-bold">
                                                 {row.month}월{row.isPromotionMonth && ' ⬆'}
                                             </td>
-                                            <td className="py-1 px-2 text-center border border-slate-200 text-slate-500">
+                                            <td className="py-0.5 px-1 text-center border border-slate-200 text-slate-500">
                                                 {row.hobong}
                                             </td>
-                                            <td className="py-1 px-2 text-right border border-slate-200">
+                                            <td className="py-0.5 px-1 text-right border border-slate-200">
                                                 {formatMoneyCompact(row.baseSalary)}
                                             </td>
-                                            <td className="py-1 px-2 text-right border border-slate-200">
+                                            <td className="py-0.5 px-1 text-right border border-slate-200">
                                                 {formatMoneyCompact(row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance + (row.welfarePointsPayment || 0))}
                                             </td>
-                                            <td className={`py-1 px-2 text-right border border-slate-200 ${row.holidayBonus > 0 ? 'text-blue-600 font-bold' : 'text-slate-300'}`}>
+                                            <td className={`py-0.5 px-1 text-right border border-slate-200 ${row.holidayBonus > 0 ? 'text-blue-600 font-bold' : 'text-slate-300'}`}>
                                                 {row.holidayBonus > 0 ? formatMoneyCompact(row.holidayBonus) : '-'}
                                             </td>
-                                            <td className="py-1 px-2 text-right border border-slate-200 font-bold text-blue-800 bg-blue-50">
+                                            <td className="py-0.5 px-1 text-right border border-slate-200 font-bold text-blue-800 bg-blue-50">
                                                 {formatMoneyCompact(row.monthlyTotal)}
                                             </td>
-                                            <td className="py-1 px-2 text-right border border-slate-200 text-red-600 bg-red-50">
+                                            <td className="py-0.5 px-1 text-right border border-slate-200 text-red-600 bg-red-50">
                                                 {formatMoneyCompact(row.deductions.total)}
                                             </td>
-                                            <td className="py-1 px-2 text-right border border-slate-200 font-black text-yellow-700 bg-yellow-50">
+                                            <td className="py-0.5 px-1 text-right border border-slate-200 font-black text-yellow-700 bg-yellow-50">
                                                 {formatMoneyCompact(row.netPay)}
                                             </td>
                                         </tr>
@@ -239,23 +239,23 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                 </tbody>
                                 <tfoot>
                                     <tr className="bg-slate-200 font-bold">
-                                        <td className="py-1.5 px-2 text-center border border-slate-300" colSpan={2}>연간 합계</td>
-                                        <td className="py-1.5 px-2 text-right border border-slate-300">
+                                        <td className="py-1 px-1 text-center border border-slate-300" colSpan={2}>연간 합계</td>
+                                        <td className="py-1 px-1 text-right border border-slate-300">
                                             {formatMoneyCompact(totalBaseSalary)}
                                         </td>
-                                        <td className="py-1.5 px-2 text-right border border-slate-300">
+                                        <td className="py-1 px-1 text-right border border-slate-300">
                                             {formatMoneyCompact(totalAllowances)}
                                         </td>
-                                        <td className="py-1.5 px-2 text-right border border-slate-300 text-blue-600">
+                                        <td className="py-1 px-1 text-right border border-slate-300 text-blue-600">
                                             {formatMoneyCompact(totalHolidayBonus)}
                                         </td>
-                                        <td className="py-1.5 px-2 text-right border border-slate-300 text-blue-800 bg-blue-100">
+                                        <td className="py-1 px-1 text-right border border-slate-300 text-blue-800 bg-blue-100">
                                             {formatMoneyCompact(totalMonthly)}
                                         </td>
-                                        <td className="py-1.5 px-2 text-right border border-slate-300 text-red-600 bg-red-100">
+                                        <td className="py-1 px-1 text-right border border-slate-300 text-red-600 bg-red-100">
                                             {formatMoneyCompact(totalDeductions)}
                                         </td>
-                                        <td className="py-1.5 px-2 text-right border border-slate-300 font-black text-yellow-700 bg-yellow-100">
+                                        <td className="py-1 px-1 text-right border border-slate-300 font-black text-yellow-700 bg-yellow-100">
                                             {formatMoneyCompact(totalNetPay)}
                                         </td>
                                     </tr>
@@ -263,11 +263,11 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                             </table>
                         </div>
 
-                        {/* Additional Info - 컴팩트 */}
-                        <div className="pdf-info-grid grid grid-cols-2 gap-3 mb-3 text-xs">
-                            <div className="p-2 bg-slate-50 rounded">
-                                <h3 className="font-bold text-slate-700 mb-1">지급 기준</h3>
-                                <ul className="text-slate-600 space-y-0.5">
+                        {/* Additional Info - 더 컴팩트 */}
+                        <div className="pdf-info-grid grid grid-cols-2 gap-2 mb-2 text-[9px]">
+                            <div className="p-1 bg-slate-50 rounded">
+                                <h3 className="font-bold text-slate-700 mb-0.5">지급 기준</h3>
+                                <ul className="text-slate-600 space-y-0">
                                     <li>• 명절휴가비: {holidayBonusMonths.map(m => monthNames[m-1]).join(', ')} (기본급 60%)</li>
                                     <li>• 서울시 복지포인트: {formatMoney(annualReport.summary.welfarePoints)}</li>
                                     {annualReport.summary.annualDistrict > 0 && (
@@ -275,9 +275,9 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                     )}
                                 </ul>
                             </div>
-                            <div className="p-2 bg-slate-50 rounded">
-                                <h3 className="font-bold text-slate-700 mb-1">공제 항목 (2026년 기준)</h3>
-                                <ul className="text-slate-600 space-y-0.5">
+                            <div className="p-1 bg-slate-50 rounded">
+                                <h3 className="font-bold text-slate-700 mb-0.5">공제 항목 (2026년 기준)</h3>
+                                <ul className="text-slate-600 space-y-0">
                                     <li>• 국민연금: 4.75% | 건강보험: 3.595%</li>
                                     <li>• 장기요양: 건보의 13.14% | 고용보험: 0.9%</li>
                                 </ul>
@@ -285,7 +285,7 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                         </div>
 
                         {/* Footer */}
-                        <div className="border-t border-slate-300 pt-2 text-center text-xs text-slate-500">
+                        <div className="border-t border-slate-300 pt-1 text-center text-[8px] text-slate-500">
                             <p>본 문서는 참고용 시뮬레이션 결과이며, 실제 급여와 차이가 있을 수 있습니다. | 서울시 사회복지시설 종사자 인건비 지급기준 가이드라인 2026</p>
                         </div>
                     </div>
