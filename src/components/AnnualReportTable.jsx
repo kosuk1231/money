@@ -1,9 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef } from 'react';
 
 export default function AnnualReportTable({ annualReport, promotionMonth, holidayBonusMonths = [2, 9] }) {
     const tableRef = useRef(null);
-    const pdfContentRef = useRef(null);
-    const [isPdfPreview, setIsPdfPreview] = useState(false);
 
     const formatMoney = (amount) => {
         return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
@@ -51,11 +49,162 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
     };
 
     const handlePdfExport = () => {
-        setIsPdfPreview(true);
-        setTimeout(() => {
-            window.print();
-            setTimeout(() => setIsPdfPreview(false), 500);
-        }, 100);
+        if (!annualReport?.months) return;
+        
+        const today = new Date();
+        const dateStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
+        
+        // 연간 합계 계산
+        const totalBaseSalary = annualReport.months.reduce((acc, m) => acc + m.baseSalary, 0);
+        const totalAllowances = annualReport.months.reduce((acc, m) => 
+            acc + m.mealAllowance + m.managerAllowance + m.familyAllowance + m.corporationAllowance + m.districtAllowance + (m.welfarePointsPayment || 0), 0);
+        const totalHolidayBonus = annualReport.months.reduce((acc, m) => acc + m.holidayBonus, 0);
+        const totalMonthly = annualReport.months.reduce((acc, m) => acc + m.monthlyTotal, 0);
+        const totalDeductions = annualReport.months.reduce((acc, m) => acc + m.deductions.total, 0);
+        const totalNetPay = annualReport.months.reduce((acc, m) => acc + m.netPay, 0);
+        
+        const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
+        
+        // 월별 행 생성
+        const monthRows = annualReport.months.map(row => `
+            <tr style="border-bottom: 1px solid #e2e8f0; ${row.isPromotionMonth ? 'background-color: #fefce8;' : ''}">
+                <td style="padding: 4px 6px; text-align: center; font-weight: bold; border: 1px solid #e2e8f0;">${row.month}월${row.isPromotionMonth ? ' ⬆' : ''}</td>
+                <td style="padding: 4px 6px; text-align: center; color: #64748b; border: 1px solid #e2e8f0;">${row.hobong}</td>
+                <td style="padding: 4px 6px; text-align: right; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.baseSalary)}</td>
+                <td style="padding: 4px 6px; text-align: right; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance + (row.welfarePointsPayment || 0))}</td>
+                <td style="padding: 4px 6px; text-align: right; border: 1px solid #e2e8f0; ${row.holidayBonus > 0 ? 'color: #2563eb; font-weight: bold;' : 'color: #cbd5e1;'}">${row.holidayBonus > 0 ? formatMoneyCompact(row.holidayBonus) : '-'}</td>
+                <td style="padding: 4px 6px; text-align: right; font-weight: bold; color: #1e40af; background-color: #eff6ff; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.monthlyTotal)}</td>
+                <td style="padding: 4px 6px; text-align: right; color: #dc2626; background-color: #fef2f2; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.deductions.total)}</td>
+                <td style="padding: 4px 6px; text-align: right; font-weight: 900; color: #a16207; background-color: #fefce8; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.netPay)}</td>
+            </tr>
+        `).join('');
+        
+        // HTML 콘텐츠 생성
+        const htmlContent = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta charset="UTF-8">
+                <title>2026년도 급여명세서</title>
+                <style>
+                    @page { size: A4 landscape; margin: 8mm; }
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    body { 
+                        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+                        font-size: 10px;
+                        -webkit-print-color-adjust: exact;
+                        print-color-adjust: exact;
+                        padding: 10px;
+                    }
+                    table { border-collapse: collapse; width: 100%; }
+                    @media print {
+                        body { padding: 0; }
+                    }
+                </style>
+            </head>
+            <body>
+                <div style="max-width: 100%; margin: 0 auto;">
+                    <!-- Header -->
+                    <div style="border-bottom: 2px solid #1e293b; padding-bottom: 6px; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h1 style="font-size: 16px; font-weight: 900; color: #0f172a; margin: 0;">2026년도 급여명세서 (연간)</h1>
+                            <p style="font-size: 9px; color: #64748b; margin-top: 2px;">서울시 사회복지시설 종사자 인건비 지급기준</p>
+                        </div>
+                        <div style="text-align: right; font-size: 9px; color: #64748b;">
+                            <p>발행일: ${dateStr}</p>
+                        </div>
+                    </div>
+
+                    <!-- Summary -->
+                    <div style="display: flex; gap: 8px; margin-bottom: 12px; padding: 6px; background-color: #f8fafc; border-radius: 4px;">
+                        <div style="flex: 1; text-align: center; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 9px; color: #64748b;">연간 총 급여 (세전)</div>
+                            <div style="font-size: 14px; font-weight: 900; color: #0f172a;">${formatMoney(annualReport.summary.annualPreTax)}</div>
+                        </div>
+                        <div style="flex: 1; text-align: center; padding: 8px; background: white; border-radius: 4px; border: 1px solid #e2e8f0;">
+                            <div style="font-size: 9px; color: #64748b;">연간 공제 합계</div>
+                            <div style="font-size: 14px; font-weight: 900; color: #dc2626;">-${formatMoney(totalDeductions)}</div>
+                        </div>
+                        <div style="flex: 1; text-align: center; padding: 8px; background: #eff6ff; border-radius: 4px; border: 2px solid #93c5fd;">
+                            <div style="font-size: 9px; color: #2563eb;">연간 실수령액</div>
+                            <div style="font-size: 14px; font-weight: 900; color: #1d4ed8;">${formatMoney(annualReport.summary.annualPostTax)}</div>
+                        </div>
+                    </div>
+
+                    <!-- Table -->
+                    <div style="margin-bottom: 10px;">
+                        <h2 style="font-size: 11px; font-weight: 900; color: #1e293b; margin-bottom: 6px; border-bottom: 1px solid #e2e8f0; padding-bottom: 4px;">월별 지급 내역</h2>
+                        <table style="width: 100%; font-size: 9px;">
+                            <thead>
+                                <tr style="background-color: #1e293b; color: white;">
+                                    <th style="padding: 6px; text-align: center; border: 1px solid #475569;">월</th>
+                                    <th style="padding: 6px; text-align: center; border: 1px solid #475569;">호봉</th>
+                                    <th style="padding: 6px; text-align: right; border: 1px solid #475569;">기본급</th>
+                                    <th style="padding: 6px; text-align: right; border: 1px solid #475569;">제수당</th>
+                                    <th style="padding: 6px; text-align: right; border: 1px solid #475569;">명절휴가비</th>
+                                    <th style="padding: 6px; text-align: right; border: 1px solid #475569; background-color: #1d4ed8;">지급총액</th>
+                                    <th style="padding: 6px; text-align: right; border: 1px solid #475569; background-color: #b91c1c;">공제총액</th>
+                                    <th style="padding: 6px; text-align: right; border: 1px solid #475569; background-color: #a16207;">실수령액</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${monthRows}
+                            </tbody>
+                            <tfoot>
+                                <tr style="background-color: #e2e8f0; font-weight: bold;">
+                                    <td colspan="2" style="padding: 6px; text-align: center; border: 1px solid #cbd5e1;">연간 합계</td>
+                                    <td style="padding: 6px; text-align: right; border: 1px solid #cbd5e1;">${formatMoneyCompact(totalBaseSalary)}</td>
+                                    <td style="padding: 6px; text-align: right; border: 1px solid #cbd5e1;">${formatMoneyCompact(totalAllowances)}</td>
+                                    <td style="padding: 6px; text-align: right; border: 1px solid #cbd5e1; color: #2563eb;">${formatMoneyCompact(totalHolidayBonus)}</td>
+                                    <td style="padding: 6px; text-align: right; border: 1px solid #cbd5e1; color: #1e40af; background-color: #dbeafe;">${formatMoneyCompact(totalMonthly)}</td>
+                                    <td style="padding: 6px; text-align: right; border: 1px solid #cbd5e1; color: #dc2626; background-color: #fee2e2;">${formatMoneyCompact(totalDeductions)}</td>
+                                    <td style="padding: 6px; text-align: right; border: 1px solid #cbd5e1; font-weight: 900; color: #a16207; background-color: #fef9c3;">${formatMoneyCompact(totalNetPay)}</td>
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+
+                    <!-- Additional Info -->
+                    <div style="display: flex; gap: 10px; margin-bottom: 8px; font-size: 9px;">
+                        <div style="flex: 1; padding: 6px; background-color: #f8fafc; border-radius: 4px;">
+                            <h3 style="font-weight: bold; color: #475569; margin-bottom: 4px;">지급 기준</h3>
+                            <ul style="color: #64748b; padding-left: 12px; margin: 0;">
+                                <li>명절휴가비: ${holidayBonusMonths.map(m => monthNames[m-1]).join(', ')} (기본급 60%)</li>
+                                <li>서울시 복지포인트: ${formatMoney(annualReport.summary.welfarePoints)}</li>
+                                ${annualReport.summary.annualDistrict > 0 ? `<li>자치구 수당: ${formatMoney(annualReport.summary.annualDistrict)}</li>` : ''}
+                            </ul>
+                        </div>
+                        <div style="flex: 1; padding: 6px; background-color: #f8fafc; border-radius: 4px;">
+                            <h3 style="font-weight: bold; color: #475569; margin-bottom: 4px;">공제 항목 (2026년 기준)</h3>
+                            <ul style="color: #64748b; padding-left: 12px; margin: 0;">
+                                <li>국민연금: 4.75% | 건강보험: 3.595%</li>
+                                <li>장기요양: 건보의 13.14% | 고용보험: 0.9%</li>
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Footer -->
+                    <div style="border-top: 1px solid #cbd5e1; padding-top: 6px; text-align: center; font-size: 8px; color: #94a3b8;">
+                        본 문서는 참고용 시뮬레이션 결과이며, 실제 급여와 차이가 있을 수 있습니다. | 서울시 사회복지시설 종사자 인건비 지급기준 가이드라인 2026
+                    </div>
+                </div>
+                <script>
+                    window.onload = function() {
+                        setTimeout(function() {
+                            window.print();
+                        }, 300);
+                    };
+                </script>
+            </body>
+            </html>
+        `;
+        
+        // 새 창 열기
+        const printWindow = window.open('', '_blank', 'width=1100,height=800');
+        if (printWindow) {
+            printWindow.document.write(htmlContent);
+            printWindow.document.close();
+        }
     };
 
     if (!annualReport) return null;
@@ -126,178 +275,8 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
         );
     };
 
-    // PDF Payslip Layout Component
-    const PayslipPdfLayout = () => {
-        const today = new Date();
-        const dateStr = `${today.getFullYear()}년 ${today.getMonth() + 1}월 ${today.getDate()}일`;
-        
-        // 연간 합계 계산
-        const totalBaseSalary = annualReport.months.reduce((acc, m) => acc + m.baseSalary, 0);
-        const totalAllowances = annualReport.months.reduce((acc, m) => 
-            acc + m.mealAllowance + m.managerAllowance + m.familyAllowance + m.corporationAllowance + m.districtAllowance + (m.welfarePointsPayment || 0), 0);
-        const totalHolidayBonus = annualReport.months.reduce((acc, m) => acc + m.holidayBonus, 0);
-        const totalMonthly = annualReport.months.reduce((acc, m) => acc + m.monthlyTotal, 0);
-        const totalDeductions = annualReport.months.reduce((acc, m) => acc + m.deductions.total, 0);
-        const totalNetPay = annualReport.months.reduce((acc, m) => acc + m.netPay, 0);
-        
-        return (
-            <div className="fixed inset-0 bg-white z-[9999] overflow-auto print:overflow-visible pdf-print-root" ref={pdfContentRef}>
-                {/* 닫기 버튼 (프린트에서 숨김) */}
-                <button 
-                    onClick={() => setIsPdfPreview(false)}
-                    className="fixed top-4 right-4 bg-red-600 text-white px-4 py-2 rounded-lg font-bold hover:bg-red-700 print:hidden z-[10000]"
-                >
-                    ✕ 닫기
-                </button>
-                
-                {/* PDF 콘텐츠 - 1페이지에 맞추기 */}
-                <div className="pdf-preview-container pdf-single-page p-4 print:p-0">
-                    <div className="max-w-none mx-auto">
-                        {/* Header - 컴팩트 */}
-                        <div className="border-b-2 border-slate-800 pb-1 mb-2 flex justify-between items-start">
-                            <div>
-                                <h1 className="text-lg font-black text-slate-900">2026년도 급여명세서 (연간)</h1>
-                                <p className="text-[10px] text-slate-600">서울시 사회복지시설 종사자 인건비 지급기준</p>
-                            </div>
-                            <div className="text-right text-[10px] text-slate-500">
-                                <p>발행일: {dateStr}</p>
-                            </div>
-                        </div>
-
-                        {/* Summary Section - 더 컴팩트 */}
-                        <div className="pdf-summary-grid grid grid-cols-3 gap-1 mb-2 p-1 bg-slate-50 rounded text-[10px]">
-                            <div className="text-center p-1 bg-white rounded border border-slate-200">
-                                <div className="text-[9px] text-slate-500">연간 총 급여 (세전)</div>
-                                <div className="text-sm font-black text-slate-900">
-                                    {formatMoney(annualReport.summary.annualPreTax)}
-                                </div>
-                            </div>
-                            <div className="text-center p-1 bg-white rounded border border-slate-200">
-                                <div className="text-[9px] text-slate-500">연간 공제 합계</div>
-                                <div className="text-sm font-black text-red-600">
-                                    -{formatMoney(totalDeductions)}
-                                </div>
-                            </div>
-                            <div className="text-center p-1 bg-blue-50 rounded border-2 border-blue-300">
-                                <div className="text-[9px] text-blue-600">연간 실수령액</div>
-                                <div className="text-sm font-black text-blue-700">
-                                    {formatMoney(annualReport.summary.annualPostTax)}
-                                </div>
-                            </div>
-                        </div>
-
-                        {/* Monthly Details Table - 더 컴팩트 */}
-                        <div className="mb-2">
-                            <h2 className="text-[10px] font-black text-slate-800 mb-1 border-b border-slate-200 pb-0.5">
-                                월별 지급 내역
-                            </h2>
-                            <table className="w-full text-[9px] border-collapse border border-slate-300">
-                                <thead>
-                                    <tr className="bg-slate-800 text-white">
-                                        <th className="py-1 px-1 text-center border border-slate-600">월</th>
-                                        <th className="py-1 px-1 text-center border border-slate-600">호봉</th>
-                                        <th className="py-1 px-1 text-right border border-slate-600">기본급</th>
-                                        <th className="py-1 px-1 text-right border border-slate-600">제수당</th>
-                                        <th className="py-1 px-1 text-right border border-slate-600">명절휴가비</th>
-                                        <th className="py-1 px-1 text-right border border-slate-600 bg-blue-700">지급총액</th>
-                                        <th className="py-1 px-1 text-right border border-slate-600 bg-red-700">공제총액</th>
-                                        <th className="py-1 px-1 text-right border border-slate-600 bg-yellow-600">실수령액</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {annualReport.months.map((row) => (
-                                        <tr 
-                                            key={row.month} 
-                                            className={`border-b border-slate-200 ${row.isPromotionMonth ? 'bg-yellow-50' : ''}`}
-                                        >
-                                            <td className="py-0.5 px-1 text-center border border-slate-200 font-bold">
-                                                {row.month}월{row.isPromotionMonth && ' ⬆'}
-                                            </td>
-                                            <td className="py-0.5 px-1 text-center border border-slate-200 text-slate-500">
-                                                {row.hobong}
-                                            </td>
-                                            <td className="py-0.5 px-1 text-right border border-slate-200">
-                                                {formatMoneyCompact(row.baseSalary)}
-                                            </td>
-                                            <td className="py-0.5 px-1 text-right border border-slate-200">
-                                                {formatMoneyCompact(row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance + (row.welfarePointsPayment || 0))}
-                                            </td>
-                                            <td className={`py-0.5 px-1 text-right border border-slate-200 ${row.holidayBonus > 0 ? 'text-blue-600 font-bold' : 'text-slate-300'}`}>
-                                                {row.holidayBonus > 0 ? formatMoneyCompact(row.holidayBonus) : '-'}
-                                            </td>
-                                            <td className="py-0.5 px-1 text-right border border-slate-200 font-bold text-blue-800 bg-blue-50">
-                                                {formatMoneyCompact(row.monthlyTotal)}
-                                            </td>
-                                            <td className="py-0.5 px-1 text-right border border-slate-200 text-red-600 bg-red-50">
-                                                {formatMoneyCompact(row.deductions.total)}
-                                            </td>
-                                            <td className="py-0.5 px-1 text-right border border-slate-200 font-black text-yellow-700 bg-yellow-50">
-                                                {formatMoneyCompact(row.netPay)}
-                                            </td>
-                                        </tr>
-                                    ))}
-                                </tbody>
-                                <tfoot>
-                                    <tr className="bg-slate-200 font-bold">
-                                        <td className="py-1 px-1 text-center border border-slate-300" colSpan={2}>연간 합계</td>
-                                        <td className="py-1 px-1 text-right border border-slate-300">
-                                            {formatMoneyCompact(totalBaseSalary)}
-                                        </td>
-                                        <td className="py-1 px-1 text-right border border-slate-300">
-                                            {formatMoneyCompact(totalAllowances)}
-                                        </td>
-                                        <td className="py-1 px-1 text-right border border-slate-300 text-blue-600">
-                                            {formatMoneyCompact(totalHolidayBonus)}
-                                        </td>
-                                        <td className="py-1 px-1 text-right border border-slate-300 text-blue-800 bg-blue-100">
-                                            {formatMoneyCompact(totalMonthly)}
-                                        </td>
-                                        <td className="py-1 px-1 text-right border border-slate-300 text-red-600 bg-red-100">
-                                            {formatMoneyCompact(totalDeductions)}
-                                        </td>
-                                        <td className="py-1 px-1 text-right border border-slate-300 font-black text-yellow-700 bg-yellow-100">
-                                            {formatMoneyCompact(totalNetPay)}
-                                        </td>
-                                    </tr>
-                                </tfoot>
-                            </table>
-                        </div>
-
-                        {/* Additional Info - 더 컴팩트 */}
-                        <div className="pdf-info-grid grid grid-cols-2 gap-2 mb-2 text-[9px]">
-                            <div className="p-1 bg-slate-50 rounded">
-                                <h3 className="font-bold text-slate-700 mb-0.5">지급 기준</h3>
-                                <ul className="text-slate-600 space-y-0">
-                                    <li>• 명절휴가비: {holidayBonusMonths.map(m => monthNames[m-1]).join(', ')} (기본급 60%)</li>
-                                    <li>• 서울시 복지포인트: {formatMoney(annualReport.summary.welfarePoints)}</li>
-                                    {annualReport.summary.annualDistrict > 0 && (
-                                        <li>• 자치구 수당: {formatMoney(annualReport.summary.annualDistrict)}</li>
-                                    )}
-                                </ul>
-                            </div>
-                            <div className="p-1 bg-slate-50 rounded">
-                                <h3 className="font-bold text-slate-700 mb-0.5">공제 항목 (2026년 기준)</h3>
-                                <ul className="text-slate-600 space-y-0">
-                                    <li>• 국민연금: 4.75% | 건강보험: 3.595%</li>
-                                    <li>• 장기요양: 건보의 13.14% | 고용보험: 0.9%</li>
-                                </ul>
-                            </div>
-                        </div>
-
-                        {/* Footer */}
-                        <div className="border-t border-slate-300 pt-1 text-center text-[8px] text-slate-500">
-                            <p>본 문서는 참고용 시뮬레이션 결과이며, 실제 급여와 차이가 있을 수 있습니다. | 서울시 사회복지시설 종사자 인건비 지급기준 가이드라인 2026</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        );
-    };
-
     return (
         <>
-            {isPdfPreview && <PayslipPdfLayout />}
-            
             <div className="w-full mt-8 bg-white rounded-xl shadow-lg overflow-hidden print:shadow-none print:mt-0">
                 <div className="p-6 border-b border-slate-200 flex flex-wrap gap-3 justify-between items-center print:hidden">
                     <h3 className="text-xl font-black text-slate-800">📊 2026년 월별 예상 수령액 리포트</h3>
