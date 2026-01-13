@@ -139,7 +139,7 @@ export default function SalaryResult({ result, grade, hobong, salary2025, report
                                 <div className="flex justify-between items-center py-1">
                                     <span className="flex items-center gap-1 text-sm font-bold text-slate-500">
                                         나의 통상임금
-                                        <Tooltip content="통상임금 = 기본급 + 정액급식비 + (연간 명절휴가비 ÷ 12). 시간외근무수당 계산의 기준이 됩니다.">
+                                        <Tooltip content="통상임금 = 기본급 + 정액급식비 + (기본급 × 10%). 시간외근무수당 계산의 기준이 됩니다.">
                                             <InfoIcon />
                                         </Tooltip>
                                     </span>
