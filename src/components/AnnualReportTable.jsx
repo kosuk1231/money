@@ -141,7 +141,7 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
         const totalNetPay = annualReport.months.reduce((acc, m) => acc + m.netPay, 0);
         
         return (
-            <div className="fixed inset-0 bg-white z-[9999] overflow-auto print:overflow-visible" ref={pdfContentRef}>
+            <div className="fixed inset-0 bg-white z-[9999] overflow-auto print:overflow-visible pdf-print-root" ref={pdfContentRef}>
                 {/* 닫기 버튼 (프린트에서 숨김) */}
                 <button 
                     onClick={() => setIsPdfPreview(false)}
