@@ -634,6 +634,10 @@ export default function CalculatorLayout() {
                     annualReport={annualReport} 
                     promotionMonth={parseInt(formData.promotionMonth) || null}
                     holidayBonusMonths={formData.holidayBonusMonths}
+                    optionalDeductions={{
+                        mealDeduction: formData.includeMealDeduction ? (parseInt(formData.mealDeductionAmount) || 0) : 0,
+                        mutualAid: formData.includeMutualAid ? (parseInt(formData.mutualAidAmount) || 0) : 0
+                    }}
                 />
 
                 {/* MODAL */}

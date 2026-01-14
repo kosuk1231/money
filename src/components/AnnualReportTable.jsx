@@ -1,7 +1,10 @@
 import React, { useRef } from 'react';
 
-export default function AnnualReportTable({ annualReport, promotionMonth, holidayBonusMonths = [2, 9] }) {
+export default function AnnualReportTable({ annualReport, promotionMonth, holidayBonusMonths = [2, 9], optionalDeductions = {} }) {
     const tableRef = useRef(null);
+    
+    // Calculate monthly optional deduction
+    const monthlyOptionalDeduction = (optionalDeductions.mealDeduction || 0) + (optionalDeductions.mutualAid || 0);
 
     const formatMoney = (amount) => {
         return new Intl.NumberFormat('ko-KR', { style: 'currency', currency: 'KRW' }).format(amount);
@@ -60,8 +63,8 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
             acc + m.mealAllowance + m.managerAllowance + m.familyAllowance + m.corporationAllowance + m.districtAllowance + (m.welfarePointsPayment || 0), 0);
         const totalHolidayBonus = annualReport.months.reduce((acc, m) => acc + m.holidayBonus, 0);
         const totalMonthly = annualReport.months.reduce((acc, m) => acc + m.monthlyTotal, 0);
-        const totalDeductions = annualReport.months.reduce((acc, m) => acc + m.deductions.total, 0);
-        const totalNetPay = annualReport.months.reduce((acc, m) => acc + m.netPay, 0);
+        const totalDeductions = annualReport.months.reduce((acc, m) => acc + m.deductions.total, 0) + (monthlyOptionalDeduction * 12);
+        const totalNetPay = annualReport.months.reduce((acc, m) => acc + m.netPay, 0) - (monthlyOptionalDeduction * 12);
         
         const monthNames = ['1월', '2월', '3월', '4월', '5월', '6월', '7월', '8월', '9월', '10월', '11월', '12월'];
         
@@ -74,8 +77,8 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                 <td style="padding: 4px 6px; text-align: right; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.mealAllowance + row.managerAllowance + row.familyAllowance + row.corporationAllowance + row.districtAllowance + (row.welfarePointsPayment || 0))}</td>
                 <td style="padding: 4px 6px; text-align: right; border: 1px solid #e2e8f0; ${row.holidayBonus > 0 ? 'color: #2563eb; font-weight: bold;' : 'color: #cbd5e1;'}">${row.holidayBonus > 0 ? formatMoneyCompact(row.holidayBonus) : '-'}</td>
                 <td style="padding: 4px 6px; text-align: right; font-weight: bold; color: #1e40af; background-color: #eff6ff; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.monthlyTotal)}</td>
-                <td style="padding: 4px 6px; text-align: right; color: #dc2626; background-color: #fef2f2; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.deductions.total)}</td>
-                <td style="padding: 4px 6px; text-align: right; font-weight: 900; color: #a16207; background-color: #fefce8; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.netPay)}</td>
+                <td style="padding: 4px 6px; text-align: right; color: #dc2626; background-color: #fef2f2; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.deductions.total + monthlyOptionalDeduction)}</td>
+                <td style="padding: 4px 6px; text-align: right; font-weight: 900; color: #a16207; background-color: #fefce8; border: 1px solid #e2e8f0;">${formatMoneyCompact(row.netPay - monthlyOptionalDeduction)}</td>
             </tr>
         `).join('');
         
@@ -261,14 +264,14 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                     </div>
                     <div className="monthly-card-row">
                         <span className="text-red-600">공제</span>
-                        <span className="font-bold text-red-600">-{formatMoney(row.deductions.total)}</span>
+                        <span className="font-bold text-red-600">-{formatMoney(row.deductions.total + monthlyOptionalDeduction)}</span>
                     </div>
                     
                     <div className="h-px bg-slate-300 my-2"></div>
                     
                     <div className="monthly-card-row">
                         <span className="text-lg font-black text-slate-900">실수령액</span>
-                        <span className="text-lg font-black text-yellow-700">{formatMoney(row.netPay)}</span>
+                        <span className="text-lg font-black text-yellow-700">{formatMoney(row.netPay - monthlyOptionalDeduction)}</span>
                     </div>
                 </div>
             </div>
@@ -347,10 +350,10 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                             {formatMoney(row.monthlyTotal)}
                                         </td>
                                         <td className="py-3 px-2 text-red-600">
-                                            {formatMoney(row.deductions.total)}
+                                            {formatMoney(row.deductions.total + monthlyOptionalDeduction)}
                                         </td>
                                         <td className="py-3 px-2 font-black text-yellow-700 bg-yellow-50/30 border-l border-yellow-50">
-                                            {formatMoney(row.netPay)}
+                                            {formatMoney(row.netPay - monthlyOptionalDeduction)}
                                         </td>
                                     </tr>
                                 );
@@ -372,10 +375,10 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                                     {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.monthlyTotal, 0))}
                                 </td>
                                 <td className="py-4 px-2 text-red-600">
-                                    {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.deductions.total, 0))}
+                                    {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.deductions.total, 0) + (monthlyOptionalDeduction * 12))}
                                 </td>
                                 <td className="py-4 px-2 text-yellow-900 font-black text-lg">
-                                    {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.netPay, 0))}
+                                    {formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.netPay, 0) - (monthlyOptionalDeduction * 12))}
                                 </td>
                             </tr>
                         </tfoot>
@@ -400,12 +403,12 @@ export default function AnnualReportTable({ annualReport, promotionMonth, holida
                             </div>
                             <div className="monthly-card-row">
                                 <span className="text-red-600">공제총액</span>
-                                <span className="font-bold text-red-600">-{formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.deductions.total, 0))}</span>
+                                <span className="font-bold text-red-600">-{formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.deductions.total, 0) + (monthlyOptionalDeduction * 12))}</span>
                             </div>
                             <div className="h-px bg-slate-300 my-2"></div>
                             <div className="monthly-card-row">
                                 <span className="text-xl font-black text-slate-900">실수령액</span>
-                                <span className="text-xl font-black text-yellow-700">{formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.netPay, 0))}</span>
+                                <span className="text-xl font-black text-yellow-700">{formatMoney(annualReport.months.reduce((acc, cur) => acc + cur.netPay, 0) - (monthlyOptionalDeduction * 12))}</span>
                             </div>
                         </div>
                     </div>
