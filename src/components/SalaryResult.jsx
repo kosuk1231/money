@@ -55,7 +55,9 @@ export default function SalaryResult({ result, grade, hobong, salary2025, report
 
     // Use reportSummary for annual values if available (accurate with promotion)
     const annualPreTax = reportSummary?.annualPreTax ?? result.annualTotal;
-    const annualPostTax = reportSummary?.annualPostTax ?? result.annualNetPay;
+    // Apply annual optional deductions (monthly * 12) to post-tax salary
+    const annualOptionalDeductions = totalOptionalDeductions * 12;
+    const annualPostTax = (reportSummary?.annualPostTax ?? result.annualNetPay) - annualOptionalDeductions;
     const annualHoliday = reportSummary?.annualHoliday ?? result.annualHoliday;
     const welfarePoints = reportSummary?.welfarePoints ?? result.welfarePoints;
     const annualDistrict = reportSummary?.annualDistrict ?? result.districtAllowance;
