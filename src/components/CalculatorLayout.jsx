@@ -670,10 +670,20 @@ export default function CalculatorLayout() {
                                         includeMutualAid: formData.includeMutualAid,
                                         mutualAidAmount: parseInt(formData.mutualAidAmount) || 0
                                     }}
+                                    deductionBases={{
+                                        standardMonthlyIncome: formData.standardMonthlyIncome,
+                                        monthlyRemuneration: formData.monthlyRemuneration
+                                    }}
                                     onOptionalDeductionChange={(field, value) => {
                                         setFormData(prev => ({
                                             ...prev,
                                             [field]: typeof value === 'boolean' ? value : parseInt(value) || 0
+                                        }));
+                                    }}
+                                    onDeductionBaseChange={(field, value) => {
+                                        setFormData(prev => ({
+                                            ...prev,
+                                            [field]: value
                                         }));
                                     }}
                                />

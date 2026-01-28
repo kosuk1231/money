@@ -1,7 +1,7 @@
 import React from 'react';
 import Tooltip, { InfoIcon } from './Tooltip';
 
-export default function SalaryResult({ result, grade, hobong, salary2025, reportSummary, optionalDeductions = {}, onOptionalDeductionChange }) {
+export default function SalaryResult({ result, grade, hobong, salary2025, reportSummary, optionalDeductions = {}, onOptionalDeductionChange, deductionBases = {}, onDeductionBaseChange }) {
     // Calculate optional deductions
     const mealDeduction = optionalDeductions.includeMealDeduction ? (optionalDeductions.mealDeductionAmount || 0) : 0;
     const mutualAid = optionalDeductions.includeMutualAid ? (optionalDeductions.mutualAidAmount || 0) : 0;
@@ -158,20 +158,61 @@ export default function SalaryResult({ result, grade, hobong, salary2025, report
                 {/* 2. Deductions (Top Right) */}
                 <div className="bg-red-50 border-4 border-red-800 rounded-xl p-6 shadow-[6px_6px_0px_0px_rgba(153,27,27,0.3)] flex flex-col justify-between h-full">
                     <h2 className="text-xl font-black text-red-900 mb-4">공제 예상액</h2>
+                    
+                    {/* 공제 기준 금액 설정 */}
+                    <div className="mb-4 p-3 bg-red-100/50 rounded-lg border border-red-200">
+                        <div className="flex items-center gap-1 mb-3">
+                            <span className="text-xs font-bold text-red-800">공제 기준 금액</span>
+                            <Tooltip content="6월까지는 전년도 과세소득 기준으로 보험료가 산정됩니다. 급여명세서의 실제 기준 금액을 입력하면 정확한 공제액을 계산합니다.">
+                                <InfoIcon />
+                            </Tooltip>
+                        </div>
+                        <div className="grid grid-cols-2 gap-2">
+                            <div>
+                                <label className="block text-[10px] font-medium text-red-700 mb-1">
+                                    국민연금 기준소득월액
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="1000"
+                                    value={deductionBases.standardMonthlyIncome || ''}
+                                    onChange={(e) => onDeductionBaseChange && onDeductionBaseChange('standardMonthlyIncome', e.target.value)}
+                                    placeholder="자동계산"
+                                    className="w-full p-1.5 text-xs text-right border border-red-200 rounded font-bold focus:border-red-500 outline-none placeholder:text-red-300 bg-white"
+                                />
+                            </div>
+                            <div>
+                                <label className="block text-[10px] font-medium text-red-700 mb-1">
+                                    건강/고용 보수월액
+                                </label>
+                                <input
+                                    type="number"
+                                    min="0"
+                                    step="1000"
+                                    value={deductionBases.monthlyRemuneration || ''}
+                                    onChange={(e) => onDeductionBaseChange && onDeductionBaseChange('monthlyRemuneration', e.target.value)}
+                                    placeholder="자동계산"
+                                    className="w-full p-1.5 text-xs text-right border border-red-200 rounded font-bold focus:border-red-500 outline-none placeholder:text-red-300 bg-white"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
                     <div className="flex flex-col justify-around flex-1 space-y-1">
                         <ResultRow 
                             label="국민연금 (4.75%)" 
                             value={result.deductions.nationalPension} 
                             isSub={true} 
                             isDeduction={true}
-                            tooltip="월 소득의 4.75%를 납부하며, 사업주도 동일 금액을 부담합니다. (2026년 기준)"
+                            tooltip={`기준소득월액 ${result.deductions.pensionBase ? new Intl.NumberFormat('ko-KR').format(result.deductions.pensionBase) + '원' : '(자동계산)'}의 4.75%`}
                         />
                         <ResultRow 
                             label="건강보험 (3.595%)" 
                             value={result.deductions.healthInsurance} 
                             isSub={true} 
                             isDeduction={true}
-                            tooltip="월 소득의 3.595%를 납부합니다. (2026년 기준)"
+                            tooltip={`보수월액 ${result.deductions.insuranceBase ? new Intl.NumberFormat('ko-KR').format(result.deductions.insuranceBase) + '원' : '(자동계산)'}의 3.595%`}
                         />
                         <ResultRow 
                             label="장기요양 (13.14%)" 
@@ -185,6 +226,7 @@ export default function SalaryResult({ result, grade, hobong, salary2025, report
                             value={result.deductions.employmentInsurance} 
                             isSub={true} 
                             isDeduction={true}
+                            tooltip={`보수월액 ${result.deductions.insuranceBase ? new Intl.NumberFormat('ko-KR').format(result.deductions.insuranceBase) + '원' : '(자동계산)'}의 0.9%`}
                         />
                         <ResultRow 
                             label="세금 (소득세+지방세)" 
