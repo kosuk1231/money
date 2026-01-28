@@ -316,11 +316,15 @@ export function calculateSalary(grade, hobong, options = {}) {
   const nonTaxableAmount = mealAllowance + childUnder6TaxExempt;
   const taxableIncome = Math.max(0, monthlyTotal - nonTaxableAmount);
 
-  const pensionIncome = Math.min(taxableIncome, 6170000); // 2026 cap check needed, using existing
-  const nationalPension = Math.floor(pensionIncome * DEDUCTION_RATES.PENSION / 10) * 10;
-  const healthInsurance = Math.floor(taxableIncome * DEDUCTION_RATES.HEALTH / 10) * 10;
+  // 국민연금: 기준소득월액 사용 (수동 입력 시) 또는 과세소득 기준 자동 계산
+  const pensionBase = options.standardMonthlyIncome || Math.min(taxableIncome, 6170000);
+  const nationalPension = Math.floor(pensionBase * DEDUCTION_RATES.PENSION / 10) * 10;
+  
+  // 건강/고용보험: 보수월액 사용 (수동 입력 시) 또는 과세소득 기준 자동 계산
+  const insuranceBase = options.monthlyRemuneration || taxableIncome;
+  const healthInsurance = Math.floor(insuranceBase * DEDUCTION_RATES.HEALTH / 10) * 10;
   const longTermCare = Math.floor(healthInsurance * DEDUCTION_RATES.CARE / 10) * 10;
-  const employmentInsurance = Math.floor(taxableIncome * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
+  const employmentInsurance = Math.floor(insuranceBase * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
 
   const totalChildren = getTotalChildren(options.numChildren);
   const numFamily = 1 + (options.hasSpouse ? 1 : 0) + totalChildren + options.numOthers;
@@ -362,7 +366,10 @@ export function calculateSalary(grade, hobong, options = {}) {
       employmentInsurance,
       incomeTax,
       localIncomeTax,
-      total: totalDeductions
+      total: totalDeductions,
+      // 계산에 사용된 기준 금액
+      pensionBase,
+      insuranceBase
     },
     netPay,
     // Annual fields
@@ -451,11 +458,15 @@ export function generateAnnualReport(startGrade, startHobong, promotionMonth, op
     const nonTaxable = mealAllowance + welfarePointsPayment + districtWelfareNonTaxable + childUnder6TaxExempt; 
     const taxable = Math.max(0, monthlyTotal - nonTaxable);
 
-    const pensionIncome = Math.min(taxable, 6170000);
-    const nationalPension = Math.floor(pensionIncome * DEDUCTION_RATES.PENSION / 10) * 10;
-    const healthInsurance = Math.floor(taxable * DEDUCTION_RATES.HEALTH / 10) * 10;
+    // 국민연금: 기준소득월액 사용 (수동 입력 시) 또는 과세소득 기준 자동 계산
+    const pensionBase = options.standardMonthlyIncome || Math.min(taxable, 6170000);
+    const nationalPension = Math.floor(pensionBase * DEDUCTION_RATES.PENSION / 10) * 10;
+    
+    // 건강/고용보험: 보수월액 사용 (수동 입력 시) 또는 과세소득 기준 자동 계산
+    const insuranceBase = options.monthlyRemuneration || taxable;
+    const healthInsurance = Math.floor(insuranceBase * DEDUCTION_RATES.HEALTH / 10) * 10;
     const longTermCare = Math.floor(healthInsurance * DEDUCTION_RATES.CARE / 10) * 10;
-    const employmentInsurance = Math.floor(taxable * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
+    const employmentInsurance = Math.floor(insuranceBase * DEDUCTION_RATES.EMPLOYMENT / 10) * 10;
     
     const numChildren = getTotalChildren(options.numChildren);
     const numFamily = 1 + (options.hasSpouse ? 1 : 0) + numChildren + options.numOthers;

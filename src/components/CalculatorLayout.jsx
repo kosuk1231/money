@@ -31,7 +31,10 @@ export default function CalculatorLayout() {
         includeMealDeduction: false,
         mealDeductionAmount: 0,
         includeMutualAid: false,
-        mutualAidAmount: 0
+        mutualAidAmount: 0,
+        // 공제 기준 금액 (수동 입력)
+        standardMonthlyIncome: '', // 국민연금 기준소득월액
+        monthlyRemuneration: ''     // 건강/고용보험 보수월액
     });
 
     const [salaryResult, setSalaryResult] = useState(null);
@@ -72,7 +75,10 @@ export default function CalculatorLayout() {
                     type: formData.corporationType
                 },
                 district: districtData
-            }
+            },
+            // 공제 기준 금액 (수동 입력 시 사용)
+            standardMonthlyIncome: parseInt(formData.standardMonthlyIncome) || null,
+            monthlyRemuneration: parseInt(formData.monthlyRemuneration) || null
         });
         setSalaryResult(result);
 
@@ -89,7 +95,10 @@ export default function CalculatorLayout() {
                     type: formData.corporationType
                 },
                 district: districtData
-            }
+            },
+            // 공제 기준 금액 (수동 입력 시 사용)
+            standardMonthlyIncome: parseInt(formData.standardMonthlyIncome) || null,
+            monthlyRemuneration: parseInt(formData.monthlyRemuneration) || null
         });
         setAnnualReport(report);
 
@@ -517,6 +526,60 @@ export default function CalculatorLayout() {
                                                     </div>
                                                     <p className="text-xs text-slate-500 mt-2">
                                                         * 선택된 월: {formData.holidayBonusMonths.map(m => monthNames[m-1]).join(', ')}
+                                                    </p>
+                                                </div>
+
+                                                {/* 공제 기준 금액 설정 */}
+                                                <div className="mt-4 pt-4 border-t border-slate-200">
+                                                    <label className="block text-sm font-bold text-slate-600 mb-2">
+                                                        공제 기준 금액 설정
+                                                        <Tooltip content="6월까지는 전년도 과세소득 기준으로 보험료가 산정됩니다. 급여명세서의 실제 기준 금액을 입력하면 정확한 공제액을 계산할 수 있습니다.">
+                                                            <InfoIcon className="ml-1 inline-block" />
+                                                        </Tooltip>
+                                                    </label>
+                                                    
+                                                    <div className="space-y-3">
+                                                        <div>
+                                                            <label className="block text-xs font-medium text-slate-500 mb-1">
+                                                                국민연금 기준소득월액
+                                                                <Tooltip content="전년도 과세소득 총액 ÷ 근무일수 × 30일 (1,000원 미만 절사). 급여명세서에서 확인 가능합니다.">
+                                                                    <InfoIcon className="ml-1 inline-block" />
+                                                                </Tooltip>
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                step="1000"
+                                                                name="standardMonthlyIncome"
+                                                                value={formData.standardMonthlyIncome}
+                                                                onChange={handleInputChange}
+                                                                placeholder="미입력 시 자동 계산"
+                                                                className="w-full p-2 border border-slate-300 rounded font-bold text-sm text-right placeholder:text-slate-400 placeholder:font-normal focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                        
+                                                        <div>
+                                                            <label className="block text-xs font-medium text-slate-500 mb-1">
+                                                                건강/고용보험 보수월액
+                                                                <Tooltip content="건강보험공단에서 결정한 보수월액. 급여명세서에서 확인 가능합니다.">
+                                                                    <InfoIcon className="ml-1 inline-block" />
+                                                                </Tooltip>
+                                                            </label>
+                                                            <input
+                                                                type="number"
+                                                                min="0"
+                                                                step="1000"
+                                                                name="monthlyRemuneration"
+                                                                value={formData.monthlyRemuneration}
+                                                                onChange={handleInputChange}
+                                                                placeholder="미입력 시 자동 계산"
+                                                                className="w-full p-2 border border-slate-300 rounded font-bold text-sm text-right placeholder:text-slate-400 placeholder:font-normal focus:border-blue-500 outline-none"
+                                                            />
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <p className="text-xs text-blue-600 mt-2">
+                                                        * 비워두면 현재 월급 기준으로 자동 계산됩니다.
                                                     </p>
                                                 </div>
                                             </div>
