@@ -150,7 +150,7 @@ export default function CalculatorLayout() {
                 {/* Creator Credit */}
                 <div className="text-center mb-4">
                     <span className="text-sm text-slate-500 font-medium">
-                        제작자: 고석우 (<a href="https://twitter.com/carpediemkosuk" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 transition-colors">@carpediemkosuk</a>)
+                        제작자: 고석우 (<a href="https://www.facebook.com/carpediemkosuk" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 transition-colors">@carpediemkosuk</a>)
                     </span>
                 </div>
 
