@@ -147,6 +147,13 @@ export default function CalculatorLayout() {
     return (
         <div className="min-h-screen bg-slate-50 flex flex-col items-center p-4 font-sans">
             <div className="w-full max-w-[1400px]">
+                {/* Creator Credit */}
+                <div className="text-center mb-4">
+                    <span className="text-sm text-slate-500 font-medium">
+                        제작자: 고석우 (<a href="https://twitter.com/carpediemkosuk" target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:text-blue-800 transition-colors">@carpediemkosuk</a>)
+                    </span>
+                </div>
+
                 {/* Header */}
                 <header className="mb-8 text-center">
                     <h1 className="text-4xl font-black text-slate-800 tracking-tight mb-2">
